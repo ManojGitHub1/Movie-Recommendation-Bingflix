@@ -1,0 +1,246 @@
+body {
+    /* font-family: Arial, sans-serif; */
+    background-color: #000;
+    color: #fff;
+    margin: 0;
+    display: flex;
+    flex-direction: column; /* Ensures navbar stays at the top and content is below */
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    font-family: 'Open Sans', Verdana, Geneva, Tahoma, sans-serif;
+  }
+
+ 
+
+.nav {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    z-index: 10;
+   
+    background-color: #fff;
+    padding: 20px;
+    transition: 0.5s;
+    border-radius: 50px;
+    overflow: hidden;
+    box-shadow: 0 8px 15px rgba(0,0,0,.2);
+}
+
+.menu {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    width: 0;
+    overflow: hidden;
+    transition: 0.5s;
+
+}
+
+
+.nav input:checked ~ .menu {
+    width: 450px;
+}
+
+.menu li {
+    list-style: none;
+    margin: 0 10px;
+    display: flex; /* Ensure list items use flexbox */
+
+}
+
+.menu li a {
+    text-decoration: none;
+    color: #666;
+    text-transform: uppercase;
+    font-weight: 600;
+    transition: 0.5s;
+}
+
+.menu li a:hover {
+    color: #161919;
+}
+
+.nav input[type="checkbox"] {
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    opacity: 0;
+}
+
+.search-form {
+  margin-top: 10px; /* Add margin for better spacing */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100px;
+  
+  background-color: #f8f7f7;
+ 
+}
+
+.search-input {
+  margin-top: -6px;
+  padding: 9px 12px;
+  border: 1px solid #000000;
+  border-radius: 20px;
+  font-size: 14px;
+  
+  width: 80px; /* Define a standard width */
+ 
+}
+
+.search-input::placeholder {
+  color: #110707;
+}
+
+.nav span {
+    position: absolute;
+    left: 20px;
+    width: 30px;
+    height: 4px;
+    border-radius: 50px;
+    background-color: #666;
+    pointer-events: none;
+    transition: 0.5s;
+}
+
+.nav input:checked ~ span {
+    background-color: #f974a1;
+}
+
+
+#menu-toggle:checked + .hamburger span:nth-child(1) {
+  transform: rotate(-45deg) translate(5px, 5px);
+  background-color: #f974a1;
+}
+
+#menu-toggle:checked + .hamburger span:nth-child(2) {
+  transform: rotate(45deg) translate(5px, -5px);
+  background-color: #f974a1;
+}
+
+
+ .nav span:nth-child(2) {
+    transform: translateY(-8px);
+}
+
+.nav span:nth-child(3) {
+    transform: translateY(8px);
+}
+
+
+
+/* Responsive Navbar Styles */
+@media (max-width: 1024px) {
+  .nav {
+    padding: 15px; /* Reduces padding for medium screens */
+  }
+
+  .menu li {
+    margin: 0 8px; /* Reduce margin between menu items */
+  }
+}
+
+@media (max-width: 768px) {
+  .nav {
+    padding: 12px; /* Smaller padding for tablet screens */
+  }
+
+  .menu li {
+    margin: 0 5px; /* Further reduce margin between menu items */
+  }
+
+  .nav input:checked ~ .menu {
+    width: 100%; /* Make the menu expand fully on small screens */
+  }
+}
+
+@media (max-width: 600px) {
+  .nav {
+    flex-direction: column; /* Stack navbar items vertically */
+    padding: 10px; /* Smaller padding for mobile devices */
+  }
+
+  .menu {
+    display: none; /* Hide menu on small screens until clicked */
+  }
+
+  .nav input:checked ~ .menu {
+    display: flex; /* Show menu when input (hamburger) is checked */
+    width: 100%;
+    flex-direction: column; /* Stack menu items vertically */
+    align-items: center;
+    padding-top: 0px;
+  }
+
+  .menu li {
+    margin: 10px 0; /* Space out menu items vertically */
+  }
+
+  .nav input {
+    display: block; /* Display hamburger icon */
+  }
+
+  .nav span {
+    left: 20px;
+    top:35px;
+   
+  }
+}
+
+  
+  .container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .item {
+    width: 200px;
+    margin: 10px;
+    text-align: center;
+  }
+  
+  .item img {
+    width: 100%;
+    height: auto;
+    border-radius: 1.2rem;
+    cursor: pointer;
+  }
+  
+  .item h2 {
+    margin-top: 10px;
+    font-size: 16px;
+  }
+  
+  @media (max-width: 600px) {
+    .item {
+      width: calc(50% - 20px);
+    }
+  }
+  
+  .tmdb-rating {
+    position: absolute;
+    margin-top: -1px;
+    color: #ffc107; /* Yellow color for stars */
+    font-size: 0.6rem; /* Font size of stars */
+    background-color: rgba(0, 0, 0, 0.579);
+    width: fit-content;
+    border-radius: 1.2rem;
+    font-weight: bolder;
+  }
+
+
+  .item {
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  .item:hover {
+    transform: scale(1.05);
+  }
+
+
+  
