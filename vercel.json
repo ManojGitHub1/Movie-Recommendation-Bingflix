@@ -10,19 +10,43 @@
       "use": "@vercel/static"
     },
     {
-        "src": "style.css",
+        "src": "*.css",
         "use": "@vercel/static"
     },
     {
-        "src": "script.js",
+        "src": "*.js",
         "use": "@vercel/static"
     },
     {
-        "src": "favicon.ico",
+        "src": "*.ico",
         "use": "@vercel/static"
     },
     {
         "src": "assets/**",
+        "use": "@vercel/static"
+    },
+    {
+        "src": "content_explore/**",
+        "use": "@vercel/static"
+    },
+    {
+        "src": "imageassets/**",
+        "use": "@vercel/static"
+    },
+    {
+        "src": "liked_movies/**",
+        "use": "@vercel/static"
+    },
+    {
+        "src": "movie_details/**",
+        "use": "@vercel/static"
+    },
+    {
+        "src": "results/**",
+        "use": "@vercel/static"
+    },
+    {
+        "src": "series_details/**",
         "use": "@vercel/static"
     }
   ],
