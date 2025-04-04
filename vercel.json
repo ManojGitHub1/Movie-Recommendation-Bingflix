@@ -2,29 +2,27 @@
     "version": 2,
     "builds": [
       {
-        "src": "api/index.js", // Your main API file
-        "use": "@vercel/node"  // Use the Node.js builder
+        "src": "api/index.js",
+        "use": "@vercel/node"
       },
       {
-          "src": "package.json", // Make sure Vercel detects frontend if needed
+          "src": "package.json",
           "use": "@vercel/static-build",
-           "config": { "distDir": "." } // Or your build output dir if you have one
+           "config": { "distDir": "." }
       }
     ],
     "routes": [
-      // Route API requests
       {
-        "src": "/api/(.*)",    // Match any request starting with /api/
-        "dest": "/api/index.js" // Forward it to your main API file
+        "src": "/api/(.*)",
+        "dest": "/api/index.js"
       },
-      // Serve static files for all other requests
       {
-        "src": "/(.*)",       // Match anything else
-        "dest": "/$1"         // Serve the corresponding static file
+        "src": "/(.*)",
+        "dest": "/$1"
       }
     ],
     "env": {
-       "MONGO_URI": "@mongo_uri", // Use Vercel environment variables
+       "MONGO_URI": "@mongo_uri",
        "JWT_SECRET": "@jwt_secret"
     }
   }
