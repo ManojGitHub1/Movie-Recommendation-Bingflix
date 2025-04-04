@@ -5,7 +5,6 @@
         "src": "api/index.js",
         "use": "@vercel/node"
       },
-      
       {
           "src": "package.json",
           "use": "@vercel/static-build",
@@ -21,9 +20,5 @@
         "src": "/(.*)",
         "dest": "/$1"
       }
-    ],
-    "env": {
-       "MONGO_URI": "@mongo_uri",
-       "JWT_SECRET": "@jwt_secret"
-    }
+    ]
   }
