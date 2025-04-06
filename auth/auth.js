@@ -35,6 +35,7 @@ function initializeAuthLogic() {
   const profileSection = document.getElementById('profileSection');
   const profileName = document.getElementById('profileName'); // Assumes ID in index.html
   const profileEmail = document.getElementById('profileEmail'); // Assumes ID in index.html
+  const logoutSection = document.getElementById('logoutSection');
   const logoutButton = document.getElementById('log_out'); // Assumes ID in index.html
   const closeModalButton = document.querySelector('#authModal .close-button');
   const loginForm = document.getElementById('loginForm');
@@ -274,6 +275,7 @@ function initializeAuthLogic() {
     
     if (profileEmail) profileEmail.textContent = email;
     if (profileSection) profileSection.style.display = 'flex';
+    if (logoutSection) logoutSection.style.display = 'list-item';
   }
 
   /** Resets sidebar/UI elements for a logged-out user. */
@@ -281,6 +283,7 @@ function initializeAuthLogic() {
     if (userLinkName) userLinkName.textContent = 'Login / Signup';
     if (userTooltip) userTooltip.textContent = 'User';
     if (profileSection) profileSection.style.display = 'none';
+    if (logoutSection) logoutSection.style.display = 'none';
   }
 
   // --- Initial Check on Page Load ---

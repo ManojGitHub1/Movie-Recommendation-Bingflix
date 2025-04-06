@@ -724,60 +724,75 @@ div.scroll-container img {
 
 
 /* logout button */
-.sidebar li.profile .logout-button {
-  display: flex; /* Use flex to align icon and text */
-  align-items: center; /* Vertically align items */
-  justify-content: center; /* Center content horizontally */
-  width: 85%; /* Make button slightly narrower than the profile area */
-  margin: 15px auto 10px auto; /* Add space above, center horizontally, space below */
-  padding: 8px 10px; /* Padding inside the button */
-  background-color: #e50914; /* Use your site's accent color (Netflix red) */
-  color: #fff; /* White text */
-  border: none; /* Remove default border */
-  border-radius: 6px; /* Slightly rounded corners */
+.sidebar li.logout-section {
+  /* Inherit general li styles if needed, or define specific ones */
+  width: 100%;
+  position: relative; /* Needed if using tooltips later, optional otherwise */
+  list-style: none; /* Remove default list bullet */
+  /* display: none; */ /* Controlled by inline style initially & JS */
+}
+
+/* Style for the logout button itself within the new li */
+.sidebar li.logout-section .logout-button {
+  display: flex; /* Align icon and text */
+  align-items: center;
+  /* Center content when sidebar is closed */
+  justify-content: center;
+  width: 90%; /* Adjust width as desired */
+  margin: 10px auto; /* Center horizontally, space top/bottom */
+  padding: 10px; /* Button padding */
+  background-color: #e50914; /* Accent color */
+  color: #fff;
+  border: none;
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 14px;
-  font-weight: 500; /* Medium font weight */
-  text-align: center;
-  opacity: 0; /* Start hidden */
-  visibility: hidden; /* Use visibility to prevent interaction when hidden */
-  transform: translateY(10px); /* Start slightly lower for animation */
-  /* Smooth transitions for appearance and hover */
-  transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out, transform 0.3s ease-in-out, background-color 0.3s ease;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.3); /* Subtle shadow */
-}
-
-/* Rule to show the button ONLY when the sidebar is open AND the profile section is visible */
-/* We check the style attribute because JS sets display: flex */
-.sidebar.open li.profile[style*="display: flex"] .logout-button {
-  opacity: 1; /* Make it fully visible */
-  visibility: visible; /* Make it interactive */
-  transform: translateY(0); /* Move to original position */
-}
-
-/* Hover effect for the button */
-.sidebar li.profile .logout-button:hover {
-  background-color: #f40612; /* Slightly brighter red on hover */
-  /* Or use a darker shade if preferred: background-color: #c40812; */
+  font-size: 15px;
+  font-weight: 500;
+  transition: background-color 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+  /* Text should be hidden initially when sidebar closed */
+  overflow: hidden;
 }
 
 /* Style the icon inside the button */
-.sidebar li.profile .logout-button i {
-  margin-right: 8px; /* Space between icon and text */
-  font-size: 18px; /* Icon size */
-  /* Prevent icon from affecting button height too much */
-  display: inline-flex;
-  vertical-align: middle;
+.sidebar li.logout-section .logout-button i {
+  font-size: 22px; /* Icon size */
+  min-width: 50px; /* Ensure space like other icons when closed */
+  text-align: center;
+  line-height: normal; /* Adjust line height if needed */
+  color: #fff; /* Ensure icon color */
+  margin-right: 0; /* No margin when closed */
+  transition: margin-right 0.3s ease; /* Animate margin */
 }
 
 /* Style the text span inside the button */
-.sidebar li.profile .logout-button span {
-    display: inline-block;
-    vertical-align: middle;
+.sidebar li.logout-section .logout-button .logout-text {
+   display: none; /* Hide text when sidebar is closed */
+   white-space: nowrap;
+   color: #fff;
+   transition: display 0.1s ease; /* Faster transition for text appearance */
 }
 
-/* Optional: Add some padding to the bottom of profile-details
-   if the button feels too close when the sidebar is open */
-.sidebar.open li.profile .profile-details {
-     padding-bottom: 5px;
+
+/* --- Styles ONLY when the sidebar is OPEN --- */
+
+/* Adjust button layout when sidebar is open */
+.sidebar.open li.logout-section .logout-button {
+  justify-content: flex-start; /* Align icon/text to the left */
+  padding-left: 18px; /* Add padding like other links */
+}
+
+/* Space between icon and text when open */
+.sidebar.open li.logout-section .logout-button i {
+   margin-right: 12px;
+}
+
+/* Show text when sidebar is open */
+.sidebar.open li.logout-section .logout-button .logout-text {
+   display: inline-block;
+}
+
+/* Hover effect for the button */
+.sidebar li.logout-section .logout-button:hover {
+  background-color: #f40612;
 }
