@@ -721,3 +721,63 @@ div.scroll-container img {
 .card-image {
   transition: transform 0.3s ease-in-out;
 }
+
+
+/* logout button */
+.sidebar li.profile .logout-button {
+  display: flex; /* Use flex to align icon and text */
+  align-items: center; /* Vertically align items */
+  justify-content: center; /* Center content horizontally */
+  width: 85%; /* Make button slightly narrower than the profile area */
+  margin: 15px auto 10px auto; /* Add space above, center horizontally, space below */
+  padding: 8px 10px; /* Padding inside the button */
+  background-color: #e50914; /* Use your site's accent color (Netflix red) */
+  color: #fff; /* White text */
+  border: none; /* Remove default border */
+  border-radius: 6px; /* Slightly rounded corners */
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500; /* Medium font weight */
+  text-align: center;
+  opacity: 0; /* Start hidden */
+  visibility: hidden; /* Use visibility to prevent interaction when hidden */
+  transform: translateY(10px); /* Start slightly lower for animation */
+  /* Smooth transitions for appearance and hover */
+  transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out, transform 0.3s ease-in-out, background-color 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3); /* Subtle shadow */
+}
+
+/* Rule to show the button ONLY when the sidebar is open AND the profile section is visible */
+/* We check the style attribute because JS sets display: flex */
+.sidebar.open li.profile[style*="display: flex"] .logout-button {
+  opacity: 1; /* Make it fully visible */
+  visibility: visible; /* Make it interactive */
+  transform: translateY(0); /* Move to original position */
+}
+
+/* Hover effect for the button */
+.sidebar li.profile .logout-button:hover {
+  background-color: #f40612; /* Slightly brighter red on hover */
+  /* Or use a darker shade if preferred: background-color: #c40812; */
+}
+
+/* Style the icon inside the button */
+.sidebar li.profile .logout-button i {
+  margin-right: 8px; /* Space between icon and text */
+  font-size: 18px; /* Icon size */
+  /* Prevent icon from affecting button height too much */
+  display: inline-flex;
+  vertical-align: middle;
+}
+
+/* Style the text span inside the button */
+.sidebar li.profile .logout-button span {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* Optional: Add some padding to the bottom of profile-details
+   if the button feels too close when the sidebar is open */
+.sidebar.open li.profile .profile-details {
+     padding-bottom: 5px;
+}
