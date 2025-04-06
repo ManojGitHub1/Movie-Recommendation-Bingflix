@@ -26,6 +26,10 @@
         "use": "@vercel/static"
     },
     {
+      "src": "auth/**",
+      "use": "@vercel/static"
+    },
+    {
         "src": "content_explore/**",
         "use": "@vercel/static"
     },
