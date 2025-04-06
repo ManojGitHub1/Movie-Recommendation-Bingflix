@@ -737,7 +737,7 @@ div.scroll-container img {
   justify-content: center; /* Center when sidebar is closed */
   width: 90%;
   margin: 10px auto;
-  padding: 8px 12px;
+  padding: 8px 8px;
   background-color: #e50914;
   color: #fff;
   border: none;
