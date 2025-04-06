@@ -1,5 +1,3 @@
-// auth/auth.js
-
 /**
  * Fetches the auth modal HTML content from 'auth/auth.html',
  * injects it into the '#authModalContainer' div in index.html,
@@ -238,11 +236,42 @@ function initializeAuthLogic() {
   // --- UI Update Functions ---
 
   /** Updates sidebar/UI elements for a logged-in user. */
+
+  function extractNameFromEmail(email) {
+    if (!email) return; // Don't proceed if email is missing
+
+    // --- Extract Name from Email ---
+    let displayName = "Welcome!"; // Default fallback
+    try {
+      // Find the index of '@'
+      const atIndex = email.indexOf('@');
+      // If '@' exists and is not the first character
+      if (atIndex > 0) {
+        // Extract the part before '@'
+        displayName = email.substring(0, atIndex);
+        // Optional: Capitalize the first letter
+        displayName = displayName.charAt(0).toUpperCase() + displayName.slice(1);
+      } else {
+        // If email format is weird, fallback to the full email or default
+        console.warn("Could not extract name from email format:", email);
+        displayName = "Welcome!"; // Or keep "Welcome!"
+      }
+    } catch (error) {
+      console.error("Error extracting name from email:", error);
+      // Keep the default "Welcome!" in case of errors
+    }
+    return displayName;
+  }
+
   function updateUIForLoggedInUser(email /*, username */) { // Accept username if available
     if (userLinkName) userLinkName.textContent = 'Profile';
     if (userTooltip) userTooltip.textContent = 'Profile';
     // Update profile section - use username if provided, otherwise default/email
-    if (profileName) profileName.textContent = /* username || */ "Welcome!";
+    let displayName = extractNameFromEmail(email); // Extract name from email
+    if (profileName) {
+      profileName.textContent = displayName;
+    }
+    
     if (profileEmail) profileEmail.textContent = email;
     if (profileSection) profileSection.style.display = 'flex';
   }
