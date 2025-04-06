@@ -725,69 +725,74 @@ div.scroll-container img {
 
 /* logout button */
 .sidebar li.logout-section {
+  /* Inherit general li styles if needed, or define specific ones */
   width: 100%;
-  position: relative;
-  list-style: none;
-  /* display: none; is controlled by JS */
-  padding: 5px 0; /* Add a little vertical space around the button */
+  position: relative; /* Needed if using tooltips later, optional otherwise */
+  list-style: none; /* Remove default list bullet */
+  /* display: none; */ /* Controlled by inline style initially & JS */
 }
 
-/* Style for the logout button itself */
+/* Style for the logout button itself within the new li */
 .sidebar li.logout-section .logout-button {
-  display: flex;        /* Use flex for icon/text alignment */
-  align-items: center;  /* Vertically center content */
-  width: auto;          /* Let button size based on content + padding */
-  margin: 0 auto 0 15px;/* Align left with some margin, auto right margin */
-                        /* This works well when sidebar is open */
-  padding: 6px 12px;    /* Smaller padding for a smaller button */
-  background-color: #555; /* Neutral dark gray background */
-  color: #ccc;          /* Lighter gray text color */
-  border: 1px solid #666; /* Subtle border */
-  border-radius: 4px;   /* Standard small border radius */
-  cursor: pointer;
-  font-size: 14px;      /* Standard font size */
-  font-weight: 400;     /* Normal font weight */
-  transition: background-color 0.2s ease, color 0.2s ease; /* Simple transitions */
-  /* Ensure it's initially centered when sidebar is closed */
+  display: flex; /* Align icon and text */
+  align-items: center;
+  /* Center content when sidebar is closed */
   justify-content: center;
+  width: 90%; /* Adjust width as desired */
+  margin: 10px auto; /* Center horizontally, space top/bottom */
+  padding: 10px; /* Button padding */
+  background-color: #e50914; /* Accent color */
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 500;
+  transition: background-color 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+  /* Text should be hidden initially when sidebar closed */
+  overflow: hidden;
 }
 
 /* Style the icon inside the button */
 .sidebar li.logout-section .logout-button i {
-  font-size: 18px;      /* Slightly smaller icon */
-  color: #ccc;          /* Match text color */
-  /* Remove margin/min-width when closed, text is hidden anyway */
+  font-size: 22px; /* Icon size */
+  min-width: 50px; /* Ensure space like other icons when closed */
+  text-align: center;
+  line-height: normal; /* Adjust line height if needed */
+  color: #fff; /* Ensure icon color */
+  margin-right: 0; /* No margin when closed */
+  transition: margin-right 0.3s ease; /* Animate margin */
 }
 
 /* Style the text span inside the button */
 .sidebar li.logout-section .logout-button .logout-text {
-   display: none;       /* Text hidden when closed */
-   margin-left: 8px;   /* Space between icon and text when shown */
+   display: none; /* Hide text when sidebar is closed */
    white-space: nowrap;
+   color: #fff;
+   transition: display 0.1s ease; /* Faster transition for text appearance */
 }
+
 
 /* --- Styles ONLY when the sidebar is OPEN --- */
 
 /* Adjust button layout when sidebar is open */
 .sidebar.open li.logout-section .logout-button {
   justify-content: flex-start; /* Align icon/text to the left */
-  width: auto; /* Keep auto width */
-  /* Margin already pushes it left */
+  padding-left: 18px; /* Add padding like other links */
+}
+
+/* Space between icon and text when open */
+.sidebar.open li.logout-section .logout-button i {
+   margin-right: 12px;
 }
 
 /* Show text when sidebar is open */
 .sidebar.open li.logout-section .logout-button .logout-text {
-   display: inline-block; /* Show the text */
+   display: inline-block;
 }
 
 /* Hover effect for the button */
 .sidebar li.logout-section .logout-button:hover {
-  background-color: #666; /* Slightly lighter gray on hover */
-  color: #fff;          /* Brighter text/icon on hover */
-  border-color: #777;
-}
-
-/* Ensure icon color changes on hover too */
-.sidebar li.logout-section .logout-button:hover i {
-  color: #fff;
+  background-color: #f40612;
 }
