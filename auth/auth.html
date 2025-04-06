@@ -8,14 +8,13 @@
     <div id="authModal" class="modal">
         <div class="modal-content">
           <span class="close-button">×</span>
-          <!-- Tab Buttons -->
           <div>
-              <button class="tab-button active" onclick="showAuthForm('loginForm')">Login</button>
-              <button class="tab-button" onclick="showAuthForm('signupForm')">Sign Up</button>
+              <button class="tab-button active" data-form="loginForm">Login</button>
+              <button class="tab-button" data-form="signupForm">Sign Up</button>
           </div>
-    
+
           <!-- Login Form -->
-          <form id="loginForm">
+          <form id="loginForm" style="display: block;">
             <h2>Login</h2>
             <div class="form-group">
               <label for="loginEmail">Email:</label>
@@ -28,9 +27,9 @@
             <button type="submit">Login</button>
             <p id="loginError" class="error-message"></p>
           </form>
-    
+
           <!-- Signup Form -->
-          <form id="signupForm">
+          <form id="signupForm" style="display: none;">
             <h2>Sign Up</h2>
             <div class="form-group">
               <label for="signupEmail">Email:</label>
@@ -48,6 +47,6 @@
             <p id="signupError" class="error-message"></p>
           </form>
         </div>
-      </div>    
+      </div>
 </body>
 </html>
