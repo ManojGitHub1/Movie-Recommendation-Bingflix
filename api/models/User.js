@@ -21,9 +21,14 @@ const UserSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-  // Add other fields like username, likedMovies array etc. later if needed
-  // username: { type: String, required: true, unique: true },
-  // likedMovies: [{ type: String }] // Storing TMDB movie IDs
+  likedMovies: {
+    type: [Number], // Array of numbers (assuming TMDB IDs are numbers)
+    default: [],    // Default to an empty array
+  },
+  recommendedMovies: {
+    type: [Number], // Array of numbers for recommended movie IDs
+    default: [],
+  }
 });
 
 // Hash password before saving

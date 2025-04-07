@@ -1,4 +1,3 @@
-// api/index.js
 const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
@@ -33,7 +32,8 @@ app.use(cors());
 
 // Mount routers
 app.use('/api/auth', require('./routes/auth'));
-
+// Mount user-specific routes under /api/user
+app.use('/api/user', require('./routes/user'));
 
 // Export the app for Vercel
 module.exports = app;
