@@ -530,10 +530,5 @@ let confettiAmount = 60,
         to.appendChild(elem);
     };
 
-// --- REMOVED Old Like Button Listener ---
-// The old `document.querySelectorAll('.paw-button').forEach(...)` block
-// and the old `updateLikeButtonState` and `toggleLikeState` functions
-// that used localStorage are no longer needed and have been replaced
-// by the new logic integrated above.
 
 console.log("movie_details.js loaded and initialized."); // Add a log to confirm script execution
