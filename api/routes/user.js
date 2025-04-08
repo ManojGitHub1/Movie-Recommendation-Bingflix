@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 // Import the authentication middleware
-const { protect } = require('../middleware/auth');
+const { protect } = require('../../auth');
 
 // Import controller functions (we will create these in the next step)
 const {
