@@ -85,8 +85,8 @@ function setLikeButtonState(movieId, isLiked) {
 
     if (isLiked) {
         // Apply 'liked' state visuals
-        likeButton.classList.add('liked');
         buttonTextSpan.textContent = "Saved"; // Update text
+        likeButton.classList.add('liked');
     } else {
         // Ensure it's in the 'not liked' state
         likeButton.classList.remove('liked'); // Ensure liked class is removed
