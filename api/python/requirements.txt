@@ -3,4 +3,4 @@ pymongo>=4.0 # For MongoDB connection
 python-dotenv>=0.19 # To load environment variables locally (optional for Vercel deployment)
 requests>=2.25 # To make requests to TMDB API
 scikit-learn>=1.0 # For TF-IDF and cosine similarity
-pandas>=1.3 # For data handling (optional but often useful)
+# pandas>=1.3 # For data handling (optional but often useful)

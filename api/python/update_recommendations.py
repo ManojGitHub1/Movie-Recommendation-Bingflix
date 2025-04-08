@@ -6,7 +6,6 @@ from pymongo import MongoClient
 from dotenv import load_dotenv
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-import pandas as pd # Using pandas for easier data manipulation
 import numpy as np # For numerical operations
 
 # --- Environment Setup ---
@@ -175,64 +174,80 @@ def generate_recommendations(user_id_str):
             print("Could not fetch details for any candidate movies.")
             return False, "Could not fetch candidate movie details."
 
-        # 5. Combine liked and candidate movies for TF-IDF processing
-        all_movie_details = liked_movie_details + candidate_movie_details
-        if len(all_movie_details) < 2: # Need at least two movies to compare
-            print("Not enough movie data (liked + candidates) to calculate similarities.")
-            return False, "Not enough movie data for comparison."
+        # 5. Combine liked and candidate movies
+        all_movie_details_list = liked_movie_details + candidate_movie_details
 
-        # Use Pandas DataFrame for easier handling
-        df = pd.DataFrame(all_movie_details)
-        # Ensure uniqueness in case a popular movie was also liked (though filtered earlier)
-        df = df.drop_duplicates(subset='id').set_index('id')
+        # Ensure uniqueness based on 'id'
+        seen_ids = set()
+        unique_movie_details_list = []
+        movie_id_map = {} # Map index in the list to movie ID
+        movie_soups = []  # List to store the 'soup' text for TF-IDF
+        all_movie_ids_ordered = [] # Keep track of movie IDs in order
+
+        for idx, movie_data in enumerate(all_movie_details_list):
+            movie_id = movie_data.get('id')
+            if movie_id not in seen_ids:
+                seen_ids.add(movie_id)
+                unique_movie_details_list.append(movie_data)
+                movie_id_map[idx] = movie_id # Store original index to ID mapping if needed (maybe not here)
+                movie_soups.append(movie_data.get('soup', '')) # Get soup, default to empty string
+                all_movie_ids_ordered.append(movie_id) # Store ID in the order they appear in movie_soups
+
+
+        if len(unique_movie_details_list) < 2: # Need at least two movies to compare
+            print("Not enough unique movie data (liked + candidates) to calculate similarities.")
+            return False, "Not enough unique movie data for comparison."
 
 
         # 6. Feature Extraction (TF-IDF)
         tfidf = TfidfVectorizer(stop_words='english')
-        # Handle potential empty 'soup' strings if overview/keywords were missing
-        df['soup'] = df['soup'].fillna('')
-        tfidf_matrix = tfidf.fit_transform(df['soup'])
+        tfidf_matrix = tfidf.fit_transform(movie_soups) # Pass the list of 'soup' strings
 
-        # 7. Calculate User Profile Vector (Average of liked movie vectors)
-        liked_indices = df.index.intersection(liked_movie_ids)
-        if liked_indices.empty:
-             print("Internal error: Liked movie indices not found in DataFrame.")
-             return False, "Internal error processing liked movies."
+        # 7. Calculate User Profile Vector
+        # Find the indices corresponding to the liked movies in our ordered list
+        liked_indices_in_list = [i for i, movie_id in enumerate(all_movie_ids_ordered) if movie_id in liked_movie_ids]
 
-        liked_vectors = tfidf_matrix[df.index.isin(liked_indices)]
-        # Check if liked_vectors is empty or has zero dimensions before mean
+        if not liked_indices_in_list:
+            print("Internal error: Liked movie indices not found.")
+            return False, "Internal error processing liked movies."
+
+        # Select rows from tfidf_matrix based on these indices
+        liked_vectors = tfidf_matrix[liked_indices_in_list]
+
         if liked_vectors.shape[0] == 0:
             print(f"No valid TF-IDF vectors found for liked movies of user {user_id_str}.")
             return False, "Could not create profile from liked movies."
 
-        user_profile_vector = np.mean(liked_vectors, axis=0)
+        # Calculate the mean vector (works directly on sparse matrix)
+        user_profile_vector = liked_vectors.mean(axis=0)
 
 
         # 8. Calculate Cosine Similarity
-        # Get vectors for candidate movies only
-        candidate_indices = df.index.intersection(candidate_movie_ids)
-        if candidate_indices.empty:
-            print("No candidate movie indices left in DataFrame.")
-            return True, "No valid candidates to compare." # Not an error, just nothing to recommend
+        # Find indices and vectors for candidate movies
+        candidate_indices_in_list = [i for i, movie_id in enumerate(all_movie_ids_ordered) if movie_id in candidate_movie_ids]
 
-        candidate_vectors = tfidf_matrix[df.index.isin(candidate_indices)]
+        if not candidate_indices_in_list:
+            print("No candidate movies found in the processed list.")
+            return True, "No valid candidates to compare."
 
-        # Calculate similarity between the user profile and candidates
-        # Reshape user_profile_vector to be a 2D array for cosine_similarity
-        # Need to handle sparse matrix output if using np.mean directly?
-        # Let's convert user_profile_vector to dense if it's sparse (it should be dense after np.mean)
-        if hasattr(user_profile_vector, "toarray"): # Check if it's sparse
-            user_profile_vector_dense = user_profile_vector.toarray().reshape(1, -1)
-        else: # If already dense (like numpy array)
-             user_profile_vector_dense = np.asarray(user_profile_vector).reshape(1, -1)
+        candidate_vectors = tfidf_matrix[candidate_indices_in_list]
+
+        # Get the actual IDs corresponding to these candidate vectors/indices
+        candidate_ids_ordered = [all_movie_ids_ordered[i] for i in candidate_indices_in_list]
 
 
-        cosine_similarities = cosine_similarity(user_profile_vector_dense, candidate_vectors)
+        # Calculate similarity (user_profile is already a row vector after .mean(axis=0))
+        # Need to ensure user_profile_vector is treated as a row matrix (1, num_features)
+        # It should be, but explicit reshape might be safer if issues arise.
+        # user_profile_vector_dense = np.asarray(user_profile_vector).reshape(1, -1) # If needed
 
-        # Create a mapping of candidate movie ID to similarity score
+        cosine_similarities = cosine_similarity(user_profile_vector, candidate_vectors)
+
         # cosine_similarities[0] contains the scores for each candidate
-        sim_scores = list(zip(candidate_indices, cosine_similarities[0]))
-
+        # Pair the scores with the actual candidate IDs
+        sim_scores = list(zip(candidate_ids_ordered, cosine_similarities[0]))
+    
+    
         # 9. Rank and Select Top N Recommendations
         sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True) # Sort by score desc
 
