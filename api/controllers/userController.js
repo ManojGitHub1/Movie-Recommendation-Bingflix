@@ -5,7 +5,7 @@ require('dotenv').config(); // Load environment variables if needed (e.g., for I
 
 // --- Function to trigger the Python ML service on Cloud Run ---
 // This function sends a POST request to the deployed Python service endpoint.
-// It operates in a 'fire-and-forget' manner - it sends the request but doesn't wait for the Python service to finish.
+// NOTE: Includes temporary debugging code to await the response and log details.
 const triggerRecommendationUpdate = async (userId) => {
     // !!! IMPORTANT: Replace this placeholder with YOUR actual Cloud Run service URL !!!
     const pythonServiceUrl = 'https://movie-recommendation-service-97667244761.us-central1.run.app/api/python/update_recommendations';
@@ -16,34 +16,60 @@ const triggerRecommendationUpdate = async (userId) => {
     console.log(`Triggering recommendation update for user: ${userId} -> ${pythonServiceUrl}`);
 
     try {
+        // Prepare the request body
+        const requestBody = JSON.stringify({ userId: userId.toString() });
+        console.log("[DEBUG] Fetch Body:", requestBody); // Log the exact body being sent
+
+        // --- TEMPORARY DEBUGGING: Await the fetch call and log response details ---
+        console.log("[DEBUG] Awaiting fetch response..."); // Log before starting the fetch
+        const response = await fetch(pythonServiceUrl, { // Temporarily use await
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                // Optional Security Header (Example)
+                // 'X-Internal-Secret': process.env.INTERNAL_SECRET_KEY
+            },
+            body: requestBody,
+            // Optional: Timeout (syntax might vary slightly between node-fetch v2/v3)
+            // timeout: 15000 // e.g., 15 seconds
+        });
+
+        // Log the HTTP status code received from the Cloud Run service (or infrastructure).
+        console.log(`[DEBUG] Python service response Status: ${response.status}`); // <-- KEY DEBUG LOG 1
+
+        // Log the first part of the response body text.
+        const responseText = await response.text();
+        console.log(`[DEBUG] Python service response Text: ${responseText.substring(0, 500)}...`); // <-- KEY DEBUG LOG 2
+        // --- END TEMPORARY DEBUGGING ---
+
+        // Log confirmation that the awaited request completed (doesn't mean success).
+        console.log(`Recommendation update request processed (awaited) for user: ${userId}`);
+
+    } catch (error) {
+        // Catch errors during the fetch process (network, DNS, timeouts, etc.)
+        // Log the *entire* error object for maximum detail during debugging.
+        console.error(`[DEBUG] Error during fetch/trigger for recommendation update for user ${userId}:`, error); // <-- KEY DEBUG LOG 3
+        // Consider more sophisticated error logging in production.
+    }
+
+    // --- Original Fire-and-Forget Logic (Commented out during debugging) ---
+    /*
+    try {
         // Send the userId to the Python service asynchronously using node-fetch.
-        // We don't use 'await' here because we want the addLike function to respond quickly to the frontend.
-        // The Python service will process the request in the background.
         fetch(pythonServiceUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                // Optional Security: If needed, you could add a pre-shared key known only
-                // to this Node.js service and the Python service.
-                // 'X-Internal-Secret': process.env.INTERNAL_SECRET_KEY
             },
-            // Ensure the userId is sent as a string in the JSON body,
-            // matching what the Python service expects.
             body: JSON.stringify({ userId: userId.toString() })
         });
-
         // Log confirmation that the request was *sent*.
-        // This does NOT guarantee the Python service received or processed it successfully.
         console.log(`Recommendation update request sent for user: ${userId}`);
-
     } catch (error) {
-        // Catch errors that occur during the *sending* of the fetch request itself
-        // (e.g., network error, DNS lookup failure, invalid Cloud Run URL).
-        // This won't catch HTTP errors (like 4xx, 5xx) from the Python service response,
-        // as we are not awaiting or processing the response.
         console.error(`Error sending trigger request for recommendation update for user ${userId}:`, error.message);
-        // Consider more robust logging (e.g., to an external service) in a production environment.
     }
+    */
+    // --- End Original Logic ---
 };
 
 
@@ -75,7 +101,8 @@ exports.addLike = async (req, res) => {
 
         // --- Trigger Recommendation Update ---
         // Call the async function to notify the Python service *after* successfully saving the like.
-        // This runs in the background and does not delay the response to the frontend.
+        // NOTE: Currently contains debugging code that makes this call synchronous (awaiting).
+        // Remember to remove the await and related console logs from triggerRecommendationUpdate later.
         triggerRecommendationUpdate(userId);
         // ------------------------------------
 
