@@ -263,6 +263,7 @@ def generate_recommendations(user_id_str):
 # This is the endpoint that Node.js will call
 @app.route("/api/python/update_recommendations", methods=["POST"])
 def update_recommendations_endpoint():
+    print("--- /api/python/update_recommendations endpoint HIT ---")
     """
     Flask endpoint to trigger recommendation generation for a user.
     Expects JSON body: { "userId": "..." }
