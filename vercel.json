@@ -6,11 +6,6 @@
       "use": "@vercel/node"
     },
     {
-      "src": "api/python/**/*.py",
-      "use": "@vercel/python",
-      "config": { "maxLambdaSize": "50mb" }
-    },
-    {
       "src": "*.html",
       "use": "@vercel/static"
     },
@@ -60,10 +55,6 @@
     }
   ],
   "routes": [
-    {
-      "src": "/api/python/(.*)",
-      "dest": "/api/python/$1"
-    },
     {
       "src": "/api/(.*)",
       "dest": "/api/index.js"
