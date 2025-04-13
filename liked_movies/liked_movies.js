@@ -1,11 +1,8 @@
-// liked_movies.js - Now displays recommendations
-
-document.addEventListener('DOMContentLoaded', async function() { // Use async for await
+document.addEventListener('DOMContentLoaded', async function() {
 
   // --- Configuration ---
-  const API_BASE_URL = '/api'; // Relative path to your backend API on Vercel
-  // No TMDB API Key needed here anymore, backend handles it!
-  const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500'; // Keep for image URLs
+  const API_BASE_URL = '/api'; // Relative path to backend API
+  const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500'; // For displaying posters
 
   // --- DOM Elements ---
   const moviesContainer = document.getElementById('moviesContainer');
@@ -19,47 +16,39 @@ document.addEventListener('DOMContentLoaded', async function() { // Use async fo
 
   if (!token) {
       moviesContainer.innerHTML = '<p style="color: #ccc; text-align: center; padding: 20px;">Please log in to see your movie recommendations.</p>';
-      // You might want to update the page title or heading dynamically too
       document.title = "Log in for Recommendations";
-      // Add a heading update if you have one:
-      // const pageHeading = document.getElementById('page-heading'); // Example ID
+      // Optional: Update a heading on the page if it exists
+      // const pageHeading = document.querySelector('.some-heading-class');
       // if (pageHeading) pageHeading.textContent = "Please Log In";
       return; // Stop execution if not logged in
   }
 
-  // --- Dynamic Title/Heading Update (Optional) ---
+  // --- Dynamic Title Update ---
   document.title = "Your Movie Recommendations";
-  // Add a heading update if you have one:
-  // const pageHeading = document.getElementById('page-heading'); // Example ID
+   // Optional: Update a heading on the page if it exists
+  // const pageHeading = document.querySelector('.some-heading-class');
   // if (pageHeading) pageHeading.textContent = "Your Movie Recommendations";
 
 
-  // --- Initial Loading State (Similar to previous method) ---
-  // Display multiple shimmer placeholders initially for visual consistency
-  // Let's assume we might get up to 10 recommendations (adjust if needed)
-  moviesContainer.innerHTML = ''; // Clear any previous content
-  const placeholderCount = 10; // Number of shimmer cards to show initially
+  // --- Initial Loading State with Shimmer ---
+  moviesContainer.innerHTML = ''; // Clear previous content
+  const placeholderCount = 10; // Show several placeholders
   for (let i = 0; i < placeholderCount; i++) {
       const movieCardPlaceholder = document.createElement('div');
-      movieCardPlaceholder.classList.add('movie-card'); // Use existing class for layout
+      movieCardPlaceholder.classList.add('movie-card');
       const shimmerDiv = document.createElement('div');
-      shimmerDiv.classList.add('shimmer-bg'); // Use existing shimmer class
+      shimmerDiv.classList.add('shimmer-bg');
       movieCardPlaceholder.appendChild(shimmerDiv);
       moviesContainer.appendChild(movieCardPlaceholder);
   }
-  // Add a loading text as well (optional)
   const loadingText = document.createElement('p');
   loadingText.id = 'loading-message';
   loadingText.textContent = 'Loading recommendations...';
-  loadingText.style.color = '#ccc';
-  loadingText.style.textAlign = 'center';
-  loadingText.style.width = '100%';
-  loadingText.style.padding = '20px';
+  loadingText.style.cssText = 'color: #ccc; text-align: center; width: 100%; padding: 20px;';
   moviesContainer.prepend(loadingText); // Add text above placeholders
 
-
   try {
-      // --- 1. Fetch Recommendations (Detailed Objects) from Backend ---
+      // --- 1. Fetch Recommendations from Backend ---
       const response = await fetch(`${API_BASE_URL}/user/recommendations`, {
           method: 'GET',
           headers: {
@@ -68,108 +57,119 @@ document.addEventListener('DOMContentLoaded', async function() { // Use async fo
           }
       });
 
-      // Clear placeholders and loading message regardless of outcome (unless error before fetch)
+      // Clear placeholders and loading message once fetch completes
       moviesContainer.innerHTML = '';
 
       if (!response.ok) {
           if (response.status === 401 || response.status === 403) {
-               moviesContainer.innerHTML = '<p style="color: #ccc; text-align: center; padding: 20px;">Authentication failed. Please log in again.</p>';
+               moviesContainer.innerHTML = '<p style="color: #ccc; text-align: center; padding: 20px;">Authentication error. Please log in again.</p>';
           } else {
-               moviesContainer.innerHTML = `<p style="color: #ccc; text-align: center; padding: 20px;">Error fetching recommendations (${response.status}). Please try again later.</p>`;
+               const errorData = await response.text(); // Try to get error details
+               console.error('Error fetching recommendations:', response.status, errorData);
+               moviesContainer.innerHTML = `<p style="color: #ccc; text-align: center; padding: 20px;">Could not load recommendations (Error ${response.status}). Please try again later.</p>`;
           }
-          console.error('Error fetching recommendations:', response.status, response.statusText);
           return; // Stop execution
       }
 
       const data = await response.json();
-      // Backend now sends { recommendations: [ {movieObj1}, {movieObj2}, ...] }
-      const recommendations = data.recommendations;
+      const recommendations = data.recommendations; // Array of detailed movie objects
 
+      // --- 2. Handle No Recommendations ---
       if (!recommendations || recommendations.length === 0) {
-          // Check if the user has liked movies to know if recommendations *should* exist
+          // Check if the user has liked movies to provide better context
           try {
-              const likesResponse = await fetch(`${API_BASE_URL}/user/likes`, { // Need this endpoint too now
+              const likesResponse = await fetch(`${API_BASE_URL}/user/likes`, {
                    method: 'GET',
                    headers: { 'Authorization': `Bearer ${token}` }
               });
                if (likesResponse.ok) {
                   const likesData = await likesResponse.json();
                   if (likesData.likedMovies && likesData.likedMovies.length > 0) {
-                      moviesContainer.innerHTML = '<p style="color: #ccc; text-align: center; padding: 20px;">Generating your recommendations... Check back soon!</p>';
+                      // User has likes, but no recommendations yet
+                      moviesContainer.innerHTML = '<p style="color: #ccc; text-align: center; padding: 20px;">Generating your recommendations based on your liked movies... Check back shortly!</p>';
                   } else {
-                      moviesContainer.innerHTML = '<p style="color: #ccc; text-align: center; padding: 20px;">Like some movies first to get recommendations!</p>';
+                      // User has no likes
+                      moviesContainer.innerHTML = '<p style="color: #ccc; text-align: center; padding: 20px;">Like some movies first to get personalized recommendations!</p>';
                   }
               } else {
-                   moviesContainer.innerHTML = '<p style="color: #ccc; text-align: center; padding: 20px;">Start liking movies to get recommendations.</p>';
+                   // Error fetching likes, provide generic message
+                   moviesContainer.innerHTML = '<p style="color: #ccc; text-align: center; padding: 20px;">Start liking movies to receive recommendations.</p>';
               }
           } catch (likesError) {
-               moviesContainer.innerHTML = '<p style="color: #ccc; text-align: center; padding: 20px;">Like some movies to get recommendations.</p>';
+               console.error("Error checking user likes:", likesError);
+               moviesContainer.innerHTML = '<p style="color: #ccc; text-align: center; padding: 20px;">Like movies to get recommendations. Could not verify current likes.</p>';
           }
-          return;
+          return; // Stop execution since there are no recommendations to display
       }
 
-      // --- 2. Display Each Recommended Movie ---
-      // We already have the details, just create the cards
+      // --- 3. Display Recommendations ---
       recommendations.forEach(movieData => {
-          // Check if movieData is valid (backend might have filtered nulls, but double-check)
-          if (movieData && movieData.id) {
+          if (movieData && movieData.id) { // Basic validation
                const movieElement = createMovieCard(movieData); // Use helper function
                moviesContainer.appendChild(movieElement);
           } else {
-              console.warn("Received invalid movie data object in recommendations:", movieData);
+              console.warn("Skipping invalid movie data in recommendations:", movieData);
           }
       });
 
-  } catch (error) { // Catch errors from the fetch itself or JSON parsing
+  } catch (error) { // Catch network errors or JSON parsing errors
       console.error('Failed to load recommendations:', error);
-      // Ensure placeholders are cleared on error too
-      moviesContainer.innerHTML = '<p style="color: #ccc; text-align: center; padding: 20px;">An unexpected error occurred while loading recommendations.</p>';
+      // Ensure placeholders/loading message are cleared on error
+      if (moviesContainer.querySelector('.shimmer-bg') || document.getElementById('loading-message')) {
+          moviesContainer.innerHTML = '';
+      }
+      moviesContainer.innerHTML = '<p style="color: #ccc; text-align: center; padding: 20px;">An unexpected error occurred. Please check your connection and try again.</p>';
   }
 });
 
 // --- Helper Function to Create Movie Card HTML ---
-// (Modified slightly to use TMDB_IMAGE_BASE_URL constant and better defaults)
-function createMovieCard(movie) { // Receives the detailed movie object from our backend
+function createMovieCard(movie) { // Receives detailed object { id, title, poster_path, ... }
   const movieCard = document.createElement('div');
   movieCard.classList.add('movie-card');
   movieCard.addEventListener('click', () => {
-      // Use 'movie' type explicitly
       handlePosterClick('movie', movie.id);
   });
 
+  // Use the TMDB_IMAGE_BASE_URL constant defined at the top
   const imageUrl = movie.poster_path
-      ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` // Use constant if defined or hardcode
-      : ''; // Handle missing poster
+      ? `${TMDB_IMAGE_BASE_URL}${movie.poster_path}`
+      : ''; // Handle missing poster path
 
-  const img = new Image();
+  const img = new Image(); // Use Image object for loading/error handling
   img.src = imageUrl;
-  img.alt = movie.title || 'Movie Poster';
+  img.alt = movie.title ? `${movie.title} Poster` : 'Movie Poster'; // Better alt text
 
+  // Define structure *after* image loads or fails
   img.onload = function() {
       movieCard.innerHTML = `
-          <img src="${this.src}" alt="${this.alt}" style="width: 100%; height: auto; display: block;">
+          <img src="${this.src}" alt="${this.alt}" style="width: 100%; height: auto; display: block; border-bottom: 1px solid #333;">
           <div class="movie-details">
               <h3 class="movie-title">${movie.title || 'Title Unavailable'}</h3>
-              </div>
+          </div>
       `;
   };
   img.onerror = function() {
+      // Fallback display when image fails to load
       movieCard.innerHTML = `
-          <div style="background-color: #222; height: 300px; display: flex; align-items: center; justify-content: center; flex-direction: column; text-align: center;">
-              <p style="color: #888; font-size: 14px; margin-bottom: 10px;">Image<br>Not Available</p>
+          <div style="background-color: #1a1a1a; height: 300px; display: flex; align-items: center; justify-content: center; flex-direction: column; text-align: center; border-bottom: 1px solid #333;">
+              <i class='bx bx-image-alt' style="font-size: 48px; color: #555; margin-bottom: 10px;"></i>
+              <p style="color: #888; font-size: 12px;">Image Not Available</p>
           </div>
           <div class="movie-details">
               <h3 class="movie-title">${movie.title || 'Title Unavailable'}</h3>
           </div>
       `;
-      movieCard.style.cursor = 'pointer';
+       movieCard.style.cursor = 'pointer'; // Ensure it remains clickable
   };
 
-  // Initial simple structure while image loads - prevents layout shifts
-   movieCard.innerHTML = `
-      <div style="background-color: #222; height: 300px;"></div>
+  // Initial simple structure while image loads (prevents layout shifts if image is slow)
+  // Match height from shimmer CSS if possible (e.g., 300px)
+  movieCard.innerHTML = `
+      <div style="background-color: #282828; height: 300px; display: flex; align-items: center; justify-content: center;">
+           <i class='bx bx-loader-alt bx-spin' style='color:#777; font-size: 30px;' ></i> <!-- Optional spinner -->
+      </div>
       <div class="movie-details">
-          <h3 class="movie-title">${movie.title || 'Loading...'}</h3>
+          <h3 class="movie-title" style="color: #aaa;">${movie.title || 'Loading...'}</h3>
       </div>
   `;
 
@@ -178,20 +178,19 @@ function createMovieCard(movie) { // Receives the detailed movie object from our
 
 
 // --- Helper Function for Click Handling ---
-// (Kept from your examples, path adjusted assuming liked_movies is one level down)
+// Navigate to movie details page (relative path from liked_movies folder)
 function handlePosterClick(mediaType, mediaId) {
   if (mediaType === 'movie') {
+    // Assumes movie_details is a sibling folder to liked_movies
     window.location.href = `../movie_details/movie_details.html?type=movie&id=${mediaId}`;
-  }
-  // Removed series logic as this page is for movie recommendations
-  else {
-    console.error('Unknown media type:', mediaType);
+  } else {
+    console.error('Unsupported media type for click:', mediaType);
   }
 }
 
 
 // --- Sidebar Logic ---
-// (Kept exactly as in your examples)
+// (Keep exactly as provided before)
 let sidebar = document.querySelector(".sidebar");
 let closeBtn = document.querySelector("#btn");
 let searchBtn = document.querySelector(".bx-search");
@@ -220,16 +219,18 @@ function menuBtnChange() {
 }
 
 // --- Search Function ---
-// (Kept exactly as in your examples, path adjusted)
+// (Keep exactly as provided before, relative path from liked_movies folder)
 function searchMovies() {
   const searchInput = document.getElementById('searchInput');
   if (!searchInput) return;
 
-  const query = searchInput.value;
-  if (query.trim().length === 0) {
+  const query = searchInput.value.trim(); // Trim whitespace
+  if (query.length === 0) {
     console.log("Search query is empty.");
+    // Optionally: provide feedback to user (e.g., input border color)
     return;
   }
+  // Assumes results is a sibling folder to liked_movies
   const url = `../results/results.html?query=${encodeURIComponent(query)}`;
   window.location.href = url;
 }
@@ -237,19 +238,24 @@ function searchMovies() {
 const searchInput = document.getElementById('searchInput');
 if (searchInput) {
   searchInput.addEventListener('keydown', function(event) {
+      // Use 'Enter' key for submission
       if (event.key === 'Enter') {
-          searchMovies();
+           event.preventDefault(); // Prevent potential form submission if inside one
+           searchMovies();
       }
   });
 }
 
 // --- Logout Functionality ---
-// (Kept, path adjusted)
+// (Keep exactly as provided before, relative path from liked_movies folder)
 const logoutButton = document.getElementById('log_out');
 if (logoutButton) {
-  logoutButton.addEventListener('click', () => {
+  logoutButton.addEventListener('click', (e) => {
+      e.preventDefault(); // Good practice if it's an <a> tag
       localStorage.removeItem('authToken');
-      // Redirect to login page (adjust path as needed from liked_movies folder)
-      window.location.href = '../auth/login.html'; // Assuming auth is sibling to liked_movies
+      // Assumes auth is a sibling folder to liked_movies
+      window.location.href = '../auth/login.html';
+      // Optional: Redirect to home page instead
+      // window.location.href = '../index.html';
   });
 }
