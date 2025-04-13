@@ -121,6 +121,9 @@ exports.addLike = async (req, res) => { // Keep async because of User.findByIdAn
             return res.status(404).json({ success: false, message: 'User not found' });
         }
 
+        // --- Add logging right before the call ---
+        console.log(`[ADDLIKE DEBUG] Found user, about to call triggerRecommendationUpdate for userId: ${userId}`);
+
         // --- Trigger Recommendation Update (Fire-and-Forget) ---
         // Call the function to notify the Python service. This call returns immediately.
         triggerRecommendationUpdate(userId);
