@@ -188,54 +188,85 @@ exports.getLikes = async (req, res) => {
 // @route   GET /api/user/recommendations
 // @access  Private (Requires authentication)
 exports.getRecommendations = async (req, res) => {
-    const userId = req.user.id; // Get user ID from 'protect' middleware
-
+    console.log('[API] GET /api/user/recommendations invoked'); // Keep for initial testing
     try {
-        // Find the user and select only the 'recommendedMovies' field.
-        const user = await User.findById(userId).select('recommendedMovies');
+        // 1. Fetch user document with only recommendedMovies field
+        const user = await User.findById(req.user.id).select('recommendedMovies');
 
         if (!user) {
-            return res.status(404).json({ success: false, message: 'User not found' });
+            console.log('[API] User not found for ID:', req.user.id);
+            return res.status(404).json({ message: 'User not found' });
         }
 
-        // Get the array of recommended movie IDs (pre-calculated by the Python service).
-        const recommendedMovieIds = user.recommendedMovies || [];
+        const movieIds = user.recommendedMovies;
 
-        // --- TODO: Future Enhancement: Fetch Full Movie Details ---
-        // Currently, we only send back the IDs stored in the database.
-        // For the frontend to display posters, titles, etc., this backend route
-        // should ideally take these IDs and make requests to the TMDB API
-        // to fetch the full details for each recommended movie before sending the response.
-        // This will be implemented in a later step.
-        /*
-        Example of fetching details (pseudo-code):
-        const detailedRecommendations = [];
-        if (recommendedMovieIds.length > 0) {
-             const tmdbApiKey = process.env.TMDB_API_KEY; // Make sure key is available
-             const fetchPromises = recommendedMovieIds.map(id =>
-                 fetch(`https://api.themoviedb.org/3/movie/${id}?api_key=${tmdbApiKey}&language=en-US`)
-                     .then(tmdbRes => tmdbRes.ok ? tmdbRes.json() : null) // Handle potential TMDB errors
-             );
-             const results = await Promise.all(fetchPromises);
-             detailedRecommendations = results.filter(details => details !== null); // Filter out any failed fetches
+        // 2. Check if there are any recommended movie IDs
+        if (!movieIds || movieIds.length === 0) {
+            console.log('[API] No recommendations found for user:', req.user.id);
+            // Return an empty array if no recommendations exist yet
+            return res.status(200).json({ recommendations: [] });
         }
-        res.status(200).json({
-            success: true,
-            recommendations: detailedRecommendations // Send detailed info
-        });
-        */
-        // --- End Enhancement Placeholder ---
 
+        console.log(`[API] Found ${movieIds.length} recommendation IDs for user ${req.user.id}:`, movieIds);
 
-        // For now, just return the IDs.
-        res.status(200).json({
-            success: true,
-            recommendations: recommendedMovieIds
+        // 3. Fetch details for each movie ID from TMDB
+        const apiKey = process.env.TMDB_API_KEY;
+        if (!apiKey) {
+            console.error('[API] TMDB_API_KEY environment variable not set.');
+            return res.status(500).json({ message: 'Server configuration error: TMDB API key missing.' });
+        }
+
+        const movieDetailsPromises = movieIds.map(async (movieId) => {
+            const url = `https://api.themoviedb.org/3/movie/${movieId}?api_key=${apiKey}&language=en-US`;
+            try {
+                // console.log(`[API] Fetching details for movie ID: ${movieId}`); // Optional: verbose logging
+                const tmdbResponse = await fetch(url);
+                if (!tmdbResponse.ok) {
+                    // Log TMDB error but don't fail the whole request, just skip this movie
+                    console.error(`[API] TMDB API error for movie ${movieId}: ${tmdbResponse.status} ${tmdbResponse.statusText}`);
+                    // Attempt to read body for more detail if possible (might fail)
+                    try {
+                        const errorBody = await tmdbResponse.text();
+                        console.error(`[API] TMDB error body for movie ${movieId}: ${errorBody.substring(0, 200)}...`);
+                    } catch (bodyError) {
+                        // Ignore if reading body fails
+                    }
+                    return null; // Indicate failure for this specific movie
+                }
+                const movieData = await tmdbResponse.json();
+                // console.log(`[API] Successfully fetched details for movie ID: ${movieId}`); // Optional: verbose logging
+
+                // Select and structure the data needed by the frontend
+                return {
+                    id: movieData.id,
+                    title: movieData.title,
+                    overview: movieData.overview,
+                    poster_path: movieData.poster_path, // Frontend will need to prepend base URL
+                    release_date: movieData.release_date, // Format: 'YYYY-MM-DD'
+                    vote_average: movieData.vote_average,
+                    // Add any other fields you might want (e.g., genres)
+                    // genres: movieData.genres.map(g => g.name) // Example if needed
+                };
+            } catch (fetchError) {
+                console.error(`[API] Network or fetch error getting details for movie ${movieId}:`, fetchError);
+                return null; // Indicate failure for this specific movie
+            }
         });
+
+        // 4. Wait for all TMDB requests to complete
+        const resolvedMovieDetails = await Promise.all(movieDetailsPromises);
+
+        // 5. Filter out any null results (due to TMDB errors)
+        const successfulMovieDetails = resolvedMovieDetails.filter(detail => detail !== null);
+
+        console.log(`[API] Successfully fetched details for ${successfulMovieDetails.length} out of ${movieIds.length} recommendations.`);
+
+        // 6. Send the array of detailed movie objects
+        res.status(200).json({ recommendations: successfulMovieDetails });
 
     } catch (error) {
-        console.error('Error fetching recommendations:', error);
-        res.status(500).json({ success: false, message: 'Server error fetching recommendations.' });
+        console.error('[API] Error in getRecommendations controller:', error);
+        res.status(500).json({ message: 'Server error fetching recommendations' });
     }
 };
 
