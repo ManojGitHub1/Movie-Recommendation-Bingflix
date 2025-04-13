@@ -102,12 +102,17 @@ exports.addLike = async (req, res) => { // Keep async because of User.findByIdAn
     const { movieId } = req.body; // Expecting { "movieId": 123 } in the request body
     const userId = req.user.id;   // Get user ID attached by the 'protect' middleware
 
+    console.log(`--- [addLike DEBUG] UserID: ${userId}, MovieID: ${movieId} ---`); // <<< Log Input
+
     // Validate input: Check if movieId is provided and is a number.
     if (movieId === undefined || typeof movieId !== 'number') {
+        console.log("--- [addLike DEBUG] Validation failed: Invalid Movie ID ---"); // <<< Log Validation Fail
         return res.status(400).json({ success: false, message: 'Please provide a valid movie ID (number).' });
     }
 
     try {
+
+        console.log("--- [addLike DEBUG] Skipping database interaction ---"); // <<< Log Skip DB
         // Find the user by ID and add the movieId to their 'likedMovies' array.
         // $addToSet prevents duplicate entries in the array.
         const user = await User.findByIdAndUpdate(
@@ -121,14 +126,16 @@ exports.addLike = async (req, res) => { // Keep async because of User.findByIdAn
             return res.status(404).json({ success: false, message: 'User not found' });
         }
 
-        // --- Add logging right before the call ---
-        console.log(`[ADDLIKE DEBUG] Found user, about to call triggerRecommendationUpdate for userId: ${userId}`);
+        // --- Call Trigger Function ---
+        console.log(`--- [addLike DEBUG] About to call triggerRecommendationUpdate for userId: ${userId} ---`); // <<< Log Before Trigger
 
         // --- Trigger Recommendation Update (Fire-and-Forget) ---
         // Call the function to notify the Python service. This call returns immediately.
         triggerRecommendationUpdate(userId);
         // ----------------------------------------------------
+        console.log("--- [addLike DEBUG] Returned from triggerRecommendationUpdate call ---"); // <<< Log After Trigger Call
 
+        console.log("--- [addLike DEBUG] Preparing 200 OK response ---"); // <<< Log Before Response
         // Send a success response back to the frontend immediately.
         // Updated message reflects that the update was initiated, not completed.
         res.status(200).json({
@@ -136,12 +143,15 @@ exports.addLike = async (req, res) => { // Keep async because of User.findByIdAn
             message: 'Movie liked successfully. Recommendation update initiated.',
             likedMovies: user.likedMovies // Return the user's full updated list of liked movies.
         });
+        console.log("--- [addLike DEBUG] Sent 200 OK response ---"); // <<< Log After Response (might not show if function terminates)
 
     } catch (error) {
         // Catch potential database errors or other unexpected issues.
-        console.error('Error in addLike controller:', error);
+        console.error('--- [addLike DEBUG] Error in addLike controller:', error); // <<< Log Catch Block
         res.status(500).json({ success: false, message: 'Server error while liking movie.' });
     }
+
+    console.log("--- [addLike DEBUG] Function finished ---"); // <<< Log End (might not show if function terminates)
 };
 
 // @desc    Get the list of liked movie IDs for the logged-in user
