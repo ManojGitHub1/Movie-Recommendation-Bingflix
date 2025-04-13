@@ -99,6 +99,7 @@ const triggerRecommendationUpdate = (userId) => { // Removed 'async' as we are n
 // @route   POST /api/user/likes
 // @access  Private (Requires authentication via 'protect' middleware)
 exports.addLike = async (req, res) => { // Keep async because of User.findByIdAndUpdate
+    console.log("--- [addLike DEBUG] Function entered ---");
     const { movieId } = req.body; // Expecting { "movieId": 123 } in the request body
     const userId = req.user.id;   // Get user ID attached by the 'protect' middleware
 
@@ -121,13 +122,18 @@ exports.addLike = async (req, res) => { // Keep async because of User.findByIdAn
             { new: true, runValidators: true } // Options: return the updated document, run schema validations
         );
 
+        console.log("--- [addLike DEBUG] User.findByIdAndUpdate completed ---"); // <<< Log After DB Call (if successful)
+        // console.log("--- [addLike DEBUG] User result:", user ? user.toObject() : 'null'); // Optional: Log user result briefly
+
         // Handle case where user might not be found (e.g., ID mismatch, though unlikely after 'protect').
         if (!user) {
+            console.log("--- [addLike DEBUG] User not found after update attempt ---"); // <<< Log User Not Found
+            // Note: This log might appear if the findByIdAndUpdate itself succeeded but found no matching user.
             return res.status(404).json({ success: false, message: 'User not found' });
         }
 
         // --- Call Trigger Function ---
-        console.log(`--- [addLike DEBUG] About to call triggerRecommendationUpdate for userId: ${userId} ---`); // <<< Log Before Trigger
+        console.log(`--- [addLike DEBUG] DB Update successful, about to call triggerRecommendationUpdate for userId: ${userId} ---`); // <<< Log Before Trigger
 
         // --- Trigger Recommendation Update (Fire-and-Forget) ---
         // Call the function to notify the Python service. This call returns immediately.
@@ -146,9 +152,11 @@ exports.addLike = async (req, res) => { // Keep async because of User.findByIdAn
         console.log("--- [addLike DEBUG] Sent 200 OK response ---"); // <<< Log After Response (might not show if function terminates)
 
     } catch (error) {
-        // Catch potential database errors or other unexpected issues.
-        console.error('--- [addLike DEBUG] Error in addLike controller:', error); // <<< Log Catch Block
-        res.status(500).json({ success: false, message: 'Server error while liking movie.' });
+        // --- Enhanced Catch Block Logging ---
+        console.error('--- [addLike DEBUG] ERROR Caught in addLike controller ---'); // <<< Log Catch Entry
+        console.error('--- [addLike DEBUG] Error Message:', error.message);       // <<< Log Error Message
+        console.error('--- [addLike DEBUG] Error Stack:', error.stack);         // <<< Log Error Stack (Important!)
+        // console.error('--- [addLike DEBUG] Full Error Object:', error);       // <<< Log Full Error (can be verbose)        res.status(500).json({ success: false, message: 'Server error while liking movie.' });
     }
 
     console.log("--- [addLike DEBUG] Function finished ---"); // <<< Log End (might not show if function terminates)
