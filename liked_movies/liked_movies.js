@@ -1,38 +1,42 @@
+// liked_movies.js - Displays recommendations fetched from backend
+
 document.addEventListener('DOMContentLoaded', async function() {
+  console.log('[LikedMovies] DOM Content Loaded');
 
   // --- Configuration ---
-  const API_BASE_URL = '/api'; // Relative path to backend API
-  const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500'; // For displaying posters
+  const API_BASE_URL = '/api'; // Relative path to backend API on Vercel
+  const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
 
   // --- DOM Elements ---
   const moviesContainer = document.getElementById('moviesContainer');
-  // Keep sidebar elements if needed by sidebar logic later
+  if (!moviesContainer) {
+      console.error('[LikedMovies] CRITICAL: Element with ID "moviesContainer" not found!');
+      return; // Stop if container doesn't exist
+  }
+  console.log('[LikedMovies] moviesContainer found:', moviesContainer);
+
+  // Sidebar elements (keep references for later logic)
   let sidebar = document.querySelector(".sidebar");
   let closeBtn = document.querySelector("#btn");
   let searchBtn = document.querySelector(".bx-search");
 
   // --- Authentication ---
   const token = localStorage.getItem('authToken');
-
   if (!token) {
+      console.log('[LikedMovies] No auth token found in localStorage.');
       moviesContainer.innerHTML = '<p style="color: #ccc; text-align: center; padding: 20px;">Please log in to see your movie recommendations.</p>';
       document.title = "Log in for Recommendations";
-      // Optional: Update a heading on the page if it exists
-      // const pageHeading = document.querySelector('.some-heading-class');
-      // if (pageHeading) pageHeading.textContent = "Please Log In";
-      return; // Stop execution if not logged in
+      return; // Stop execution
   }
+  console.log('[LikedMovies] Auth token found.'); // Don't log the token itself
 
   // --- Dynamic Title Update ---
   document.title = "Your Movie Recommendations";
-   // Optional: Update a heading on the page if it exists
-  // const pageHeading = document.querySelector('.some-heading-class');
-  // if (pageHeading) pageHeading.textContent = "Your Movie Recommendations";
-
 
   // --- Initial Loading State with Shimmer ---
   moviesContainer.innerHTML = ''; // Clear previous content
-  const placeholderCount = 10; // Show several placeholders
+  const placeholderCount = 8; // Adjust as needed
+  console.log(`[LikedMovies] Displaying ${placeholderCount} shimmer placeholders.`);
   for (let i = 0; i < placeholderCount; i++) {
       const movieCardPlaceholder = document.createElement('div');
       movieCardPlaceholder.classList.add('movie-card');
@@ -41,15 +45,15 @@ document.addEventListener('DOMContentLoaded', async function() {
       movieCardPlaceholder.appendChild(shimmerDiv);
       moviesContainer.appendChild(movieCardPlaceholder);
   }
-  const loadingText = document.createElement('p');
-  loadingText.id = 'loading-message';
-  loadingText.textContent = 'Loading recommendations...';
-  loadingText.style.cssText = 'color: #ccc; text-align: center; width: 100%; padding: 20px;';
-  moviesContainer.prepend(loadingText); // Add text above placeholders
+  // Add loading text (optional)
+  // const loadingText = document.createElement('p'); /* ... */ moviesContainer.prepend(loadingText);
 
   try {
       // --- 1. Fetch Recommendations from Backend ---
-      const response = await fetch(`${API_BASE_URL}/user/recommendations`, {
+      const recommendationUrl = `${API_BASE_URL}/user/recommendations`;
+      console.log(`[LikedMovies] Fetching recommendations from: ${recommendationUrl}`);
+
+      const response = await fetch(recommendationUrl, {
           method: 'GET',
           headers: {
               'Authorization': `Bearer ${token}`,
@@ -57,89 +61,89 @@ document.addEventListener('DOMContentLoaded', async function() {
           }
       });
 
-      // Clear placeholders and loading message once fetch completes
+      console.log('[LikedMovies] Fetch response received:', response.status, response.statusText);
+
+      // Clear placeholders *after* fetch attempt, before checking status
       moviesContainer.innerHTML = '';
 
       if (!response.ok) {
+          const errorText = await response.text(); // Get error details from response body if available
+          console.error(`[LikedMovies] Error fetching recommendations. Status: ${response.status}. Response: ${errorText}`);
           if (response.status === 401 || response.status === 403) {
                moviesContainer.innerHTML = '<p style="color: #ccc; text-align: center; padding: 20px;">Authentication error. Please log in again.</p>';
           } else {
-               const errorData = await response.text(); // Try to get error details
-               console.error('Error fetching recommendations:', response.status, errorData);
-               moviesContainer.innerHTML = `<p style="color: #ccc; text-align: center; padding: 20px;">Could not load recommendations (Error ${response.status}). Please try again later.</p>`;
+               moviesContainer.innerHTML = `<p style="color: #ccc; text-align: center; padding: 20px;">Could not load recommendations (Error ${response.status}). Check console or try again later.</p>`;
+          }
+          // Also check Vercel function logs for backend errors if status is 5xx
+          if (response.status >= 500) {
+              console.error("[LikedMovies] Hint: Check Vercel Function logs for backend errors.");
           }
           return; // Stop execution
       }
 
+      // Try parsing the JSON response
       const data = await response.json();
-      const recommendations = data.recommendations; // Array of detailed movie objects
+      console.log('[LikedMovies] Successfully parsed JSON response:', data);
+
+      // **CRITICAL CHECK:** Does the response data have the 'recommendations' array?
+      if (!data || !Array.isArray(data.recommendations)) {
+           console.error('[LikedMovies] ERROR: Backend response is missing or does not contain a "recommendations" array.', data);
+           moviesContainer.innerHTML = '<p style="color: #ccc; text-align: center; padding: 20px;">Received unexpected data format from the server.</p>';
+           return;
+      }
+
+      const recommendations = data.recommendations;
+      console.log(`[LikedMovies] Received ${recommendations.length} recommendations.`);
 
       // --- 2. Handle No Recommendations ---
-      if (!recommendations || recommendations.length === 0) {
-          // Check if the user has liked movies to provide better context
-          try {
-              const likesResponse = await fetch(`${API_BASE_URL}/user/likes`, {
-                   method: 'GET',
-                   headers: { 'Authorization': `Bearer ${token}` }
-              });
-               if (likesResponse.ok) {
-                  const likesData = await likesResponse.json();
-                  if (likesData.likedMovies && likesData.likedMovies.length > 0) {
-                      // User has likes, but no recommendations yet
-                      moviesContainer.innerHTML = '<p style="color: #ccc; text-align: center; padding: 20px;">Generating your recommendations based on your liked movies... Check back shortly!</p>';
-                  } else {
-                      // User has no likes
-                      moviesContainer.innerHTML = '<p style="color: #ccc; text-align: center; padding: 20px;">Like some movies first to get personalized recommendations!</p>';
-                  }
-              } else {
-                   // Error fetching likes, provide generic message
-                   moviesContainer.innerHTML = '<p style="color: #ccc; text-align: center; padding: 20px;">Start liking movies to receive recommendations.</p>';
-              }
-          } catch (likesError) {
-               console.error("Error checking user likes:", likesError);
-               moviesContainer.innerHTML = '<p style="color: #ccc; text-align: center; padding: 20px;">Like movies to get recommendations. Could not verify current likes.</p>';
-          }
-          return; // Stop execution since there are no recommendations to display
+      if (recommendations.length === 0) {
+          console.log('[LikedMovies] No recommendations found in the response.');
+          // SIMPLIFIED MESSAGE: We won't check /api/user/likes for now to reduce complexity.
+          moviesContainer.innerHTML = '<p style="color: #ccc; text-align: center; padding: 20px;">No movie recommendations available yet. Like some movies to get started!</p>';
+          // Later, you could add the check to /api/user/likes here for a more specific message.
+          return; // Stop execution
       }
 
       // --- 3. Display Recommendations ---
-      recommendations.forEach(movieData => {
+      console.log('[LikedMovies] Rendering recommendation cards...');
+      recommendations.forEach((movieData, index) => {
           if (movieData && movieData.id) { // Basic validation
+               // console.log(`[LikedMovies] Creating card for: ${movieData.title || movieData.id}`); // Uncomment for detailed logging
                const movieElement = createMovieCard(movieData); // Use helper function
                moviesContainer.appendChild(movieElement);
           } else {
-              console.warn("Skipping invalid movie data in recommendations:", movieData);
+              console.warn(`[LikedMovies] Skipping invalid movie data object at index ${index}:`, movieData);
           }
       });
+      console.log('[LikedMovies] Finished rendering cards.');
 
-  } catch (error) { // Catch network errors or JSON parsing errors
-      console.error('Failed to load recommendations:', error);
+  } catch (error) { // Catch network errors (e.g., DNS, CORS - unlikely here) or JSON parsing errors
+      console.error('[LikedMovies] CRITICAL ERROR during fetch/processing:', error);
       // Ensure placeholders/loading message are cleared on error
-      if (moviesContainer.querySelector('.shimmer-bg') || document.getElementById('loading-message')) {
+      if (moviesContainer.innerHTML.includes('shimmer-bg')) {
           moviesContainer.innerHTML = '';
       }
-      moviesContainer.innerHTML = '<p style="color: #ccc; text-align: center; padding: 20px;">An unexpected error occurred. Please check your connection and try again.</p>';
+      moviesContainer.innerHTML = '<p style="color: #ccc; text-align: center; padding: 20px;">An unexpected error occurred. Please check your connection and the console.</p>';
   }
 });
 
 // --- Helper Function to Create Movie Card HTML ---
-function createMovieCard(movie) { // Receives detailed object { id, title, poster_path, ... }
+// (Same robust version as before, uses TMDB_IMAGE_BASE_URL)
+function createMovieCard(movie) {
   const movieCard = document.createElement('div');
   movieCard.classList.add('movie-card');
   movieCard.addEventListener('click', () => {
       handlePosterClick('movie', movie.id);
   });
 
-  // Use the TMDB_IMAGE_BASE_URL constant defined at the top
   const imageUrl = movie.poster_path
-      ? `${TMDB_IMAGE_BASE_URL}${movie.poster_path}`
-      : ''; // Handle missing poster path
+      ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` // Use constant
+      : '';
 
-  const img = new Image(); // Use Image object for loading/error handling
+  const img = new Image();
   img.src = imageUrl;
-  img.alt = movie.title ? `${movie.title} Poster` : 'Movie Poster'; // Better alt text
+  img.alt = movie.title ? `${movie.title} Poster` : 'Movie Poster';
 
-  // Define structure *after* image loads or fails
   img.onload = function() {
       movieCard.innerHTML = `
           <img src="${this.src}" alt="${this.alt}" style="width: 100%; height: auto; display: block; border-bottom: 1px solid #333;">
@@ -149,7 +153,6 @@ function createMovieCard(movie) { // Receives detailed object { id, title, poste
       `;
   };
   img.onerror = function() {
-      // Fallback display when image fails to load
       movieCard.innerHTML = `
           <div style="background-color: #1a1a1a; height: 300px; display: flex; align-items: center; justify-content: center; flex-direction: column; text-align: center; border-bottom: 1px solid #333;">
               <i class='bx bx-image-alt' style="font-size: 48px; color: #555; margin-bottom: 10px;"></i>
@@ -159,32 +162,30 @@ function createMovieCard(movie) { // Receives detailed object { id, title, poste
               <h3 class="movie-title">${movie.title || 'Title Unavailable'}</h3>
           </div>
       `;
-       movieCard.style.cursor = 'pointer'; // Ensure it remains clickable
+       movieCard.style.cursor = 'pointer';
   };
 
-  // Initial simple structure while image loads (prevents layout shifts if image is slow)
-  // Match height from shimmer CSS if possible (e.g., 300px)
+  // Initial placeholder structure while image loads
   movieCard.innerHTML = `
       <div style="background-color: #282828; height: 300px; display: flex; align-items: center; justify-content: center;">
-           <i class='bx bx-loader-alt bx-spin' style='color:#777; font-size: 30px;' ></i> <!-- Optional spinner -->
+           <i class='bx bx-loader-alt bx-spin' style='color:#777; font-size: 30px;' ></i>
       </div>
       <div class="movie-details">
           <h3 class="movie-title" style="color: #aaa;">${movie.title || 'Loading...'}</h3>
       </div>
   `;
-
   return movieCard;
 }
 
 
 // --- Helper Function for Click Handling ---
-// Navigate to movie details page (relative path from liked_movies folder)
+// (Relative path from liked_movies folder)
 function handlePosterClick(mediaType, mediaId) {
+  // console.log(`[LikedMovies] Poster clicked - Type: ${mediaType}, ID: ${mediaId}`); // Debug logging
   if (mediaType === 'movie') {
-    // Assumes movie_details is a sibling folder to liked_movies
     window.location.href = `../movie_details/movie_details.html?type=movie&id=${mediaId}`;
   } else {
-    console.error('Unsupported media type for click:', mediaType);
+    console.error('[LikedMovies] Unsupported media type for click:', mediaType);
   }
 }
 
@@ -196,17 +197,23 @@ let closeBtn = document.querySelector("#btn");
 let searchBtn = document.querySelector(".bx-search");
 
 if (closeBtn && sidebar) {
+  // console.log("[LikedMovies] Adding listener to sidebar close button."); // Debug logging
   closeBtn.addEventListener("click", ()=>{
       sidebar.classList.toggle("open");
       menuBtnChange();
   });
+} else {
+  console.warn("[LikedMovies] Sidebar close button or sidebar element not found.");
 }
 
 if (searchBtn && sidebar) {
+  // console.log("[LikedMovies] Adding listener to sidebar search button."); // Debug logging
   searchBtn.addEventListener("click", ()=>{
       sidebar.classList.toggle("open");
       menuBtnChange();
   });
+} else {
+   console.warn("[LikedMovies] Sidebar search button or sidebar element not found.");
 }
 
 function menuBtnChange() {
@@ -219,43 +226,49 @@ function menuBtnChange() {
 }
 
 // --- Search Function ---
-// (Keep exactly as provided before, relative path from liked_movies folder)
+// (Keep exactly as provided before)
 function searchMovies() {
   const searchInput = document.getElementById('searchInput');
-  if (!searchInput) return;
-
-  const query = searchInput.value.trim(); // Trim whitespace
+  if (!searchInput) {
+       console.error("[LikedMovies] Search input element not found.");
+       return;
+  }
+  const query = searchInput.value.trim();
   if (query.length === 0) {
-    console.log("Search query is empty.");
-    // Optionally: provide feedback to user (e.g., input border color)
+    console.log("[LikedMovies] Search query is empty.");
     return;
   }
-  // Assumes results is a sibling folder to liked_movies
   const url = `../results/results.html?query=${encodeURIComponent(query)}`;
+  console.log(`[LikedMovies] Navigating to search results: ${url}`);
   window.location.href = url;
 }
 
 const searchInput = document.getElementById('searchInput');
 if (searchInput) {
+  // console.log("[LikedMovies] Adding keydown listener to search input."); // Debug logging
   searchInput.addEventListener('keydown', function(event) {
-      // Use 'Enter' key for submission
       if (event.key === 'Enter') {
-           event.preventDefault(); // Prevent potential form submission if inside one
+           event.preventDefault();
            searchMovies();
       }
   });
+} else {
+   console.warn("[LikedMovies] Search input element not found for keydown listener.");
 }
 
 // --- Logout Functionality ---
-// (Keep exactly as provided before, relative path from liked_movies folder)
+// (Keep exactly as provided before)
 const logoutButton = document.getElementById('log_out');
 if (logoutButton) {
+  // console.log("[LikedMovies] Adding listener to logout button."); // Debug logging
   logoutButton.addEventListener('click', (e) => {
-      e.preventDefault(); // Good practice if it's an <a> tag
+      e.preventDefault();
+      console.log("[LikedMovies] Logout button clicked.");
       localStorage.removeItem('authToken');
-      // Assumes auth is a sibling folder to liked_movies
-      window.location.href = '../auth/login.html';
-      // Optional: Redirect to home page instead
-      // window.location.href = '../index.html';
+      window.location.href = '../auth/login.html'; // Adjust path if needed
   });
+} else {
+   console.warn("[LikedMovies] Logout button element not found.");
 }
+
+console.log('[LikedMovies] Script finished loading.');
