@@ -5,16 +5,19 @@ require('dotenv').config(); // Load environment variables if needed (e.g., for I
 
 // --- Function to trigger the Python ML service on Cloud Run ---
 // This function sends a POST request to the deployed Python service endpoint.
-// NOTE: Includes temporary debugging code to await the response and log details.
-const triggerRecommendationUpdate = async (userId) => {
-    // !!! IMPORTANT: Replace this placeholder with YOUR actual Cloud Run service URL !!!
+// It uses the final "fire-and-forget" approach.
+const triggerRecommendationUpdate = (userId) => { // Removed 'async' as we are not awaiting fetch
+    // !!! IMPORTANT: Ensure this is YOUR actual Cloud Run service URL !!!
     const pythonServiceUrl = 'https://movie-recommendation-service-97667244761.us-central1.run.app/api/python/update_recommendations';
     // Example format: 'https://your-service-name-random-suffix-region.a.run.app/api/python/update_recommendations'
     // Make sure the path '/api/python/update_recommendations' matches the route defined in your Python Flask app.
 
-    // Log the trigger attempt for debugging purposes.
+    // Log the trigger attempt.
     console.log(`Triggering recommendation update for user: ${userId} -> ${pythonServiceUrl}`);
 
+
+    // --- Commented Out Debugging Code (Using await) ---
+    /*
     try {
         // Prepare the request body
         const requestBody = JSON.stringify({ userId: userId.toString() });
@@ -51,32 +54,51 @@ const triggerRecommendationUpdate = async (userId) => {
         console.error(`[DEBUG] Error during fetch/trigger for recommendation update for user ${userId}:`, error); // <-- KEY DEBUG LOG 3
         // Consider more sophisticated error logging in production.
     }
+    */
+    // --- End Commented Out Debugging Code ---
 
-    // --- Original Fire-and-Forget Logic (Commented out during debugging) ---
-    /*
+
+    // --- Active Fire-and-Forget Logic ---
     try {
-        // Send the userId to the Python service asynchronously using node-fetch.
+        const requestBody = JSON.stringify({ userId: userId.toString() });
+        console.log("Sending fetch Body:", requestBody); // Log the body being sent
+
+        // Initiate the fetch call but don't wait for it to complete.
         fetch(pythonServiceUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ userId: userId.toString() })
+            body: requestBody
+        })
+        .then(res => {
+            // Optional: Log the immediate response status. This confirms the request reached
+            // Cloud Run's frontend, but *not* that the Python code finished successfully.
+            console.log(`Trigger response status from Cloud Run: ${res.status} (User: ${userId})`);
+        })
+        .catch(fetchError => {
+            // Catch errors *only* if the fetch call itself fails immediately (e.g., network issue, DNS).
+            // This will NOT catch HTTP errors (like 500) from the Python service later.
+            console.error(`Error sending trigger request (fetch failed) for user ${userId}:`, fetchError.message);
         });
-        // Log confirmation that the request was *sent*.
-        console.log(`Recommendation update request sent for user: ${userId}`);
+
+        // Log immediately after starting the fetch call, indicating the request was sent off.
+        console.log(`Recommendation update request initiated for user: ${userId}`);
+
     } catch (error) {
-        console.error(`Error sending trigger request for recommendation update for user ${userId}:`, error.message);
+        // Catch synchronous errors that might occur *before* the fetch call is even made
+        // (e.g., if JSON.stringify fails, though unlikely here).
+        console.error(`Synchronous error before sending trigger for user ${userId}:`, error.message);
     }
-    */
-    // --- End Original Logic ---
+    // --- End Active Fire-and-Forget Logic ---
+
 };
 
 
 // @desc    Add a movie to the user's liked list and trigger recommendation update
 // @route   POST /api/user/likes
 // @access  Private (Requires authentication via 'protect' middleware)
-exports.addLike = async (req, res) => {
+exports.addLike = async (req, res) => { // Keep async because of User.findByIdAndUpdate
     const { movieId } = req.body; // Expecting { "movieId": 123 } in the request body
     const userId = req.user.id;   // Get user ID attached by the 'protect' middleware
 
@@ -99,17 +121,16 @@ exports.addLike = async (req, res) => {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
 
-        // --- Trigger Recommendation Update ---
-        // Call the async function to notify the Python service *after* successfully saving the like.
-        // NOTE: Currently contains debugging code that makes this call synchronous (awaiting).
-        // Remember to remove the await and related console logs from triggerRecommendationUpdate later.
+        // --- Trigger Recommendation Update (Fire-and-Forget) ---
+        // Call the function to notify the Python service. This call returns immediately.
         triggerRecommendationUpdate(userId);
-        // ------------------------------------
+        // ----------------------------------------------------
 
         // Send a success response back to the frontend immediately.
+        // Updated message reflects that the update was initiated, not completed.
         res.status(200).json({
             success: true,
-            message: 'Movie liked successfully and recommendation update triggered.',
+            message: 'Movie liked successfully. Recommendation update initiated.',
             likedMovies: user.likedMovies // Return the user's full updated list of liked movies.
         });
 
