@@ -98,22 +98,21 @@ const triggerRecommendationUpdate = (userId) => { // Removed 'async' as we are n
 // @desc    Add a movie to the user's liked list and trigger recommendation update
 // @route   POST /api/user/likes
 // @access  Private (Requires authentication via 'protect' middleware)
-exports.addLike = async (req, res) => { // Keep async because of User.findByIdAndUpdate
+exports.addLike = async (req, res) => {
     console.log("--- [addLike DEBUG] Function entered ---");
-    const { movieId } = req.body; // Expecting { "movieId": 123 } in the request body
-    const userId = req.user.id;   // Get user ID attached by the 'protect' middleware
+    const { movieId } = req.body;
+    const userId = req.user.id;
+    console.log(`--- [addLike DEBUG] UserID: ${userId}, MovieID: ${movieId} ---`);
 
-    console.log(`--- [addLike DEBUG] UserID: ${userId}, MovieID: ${movieId} ---`); // <<< Log Input
-
-    // Validate input: Check if movieId is provided and is a number.
     if (movieId === undefined || typeof movieId !== 'number') {
-        console.log("--- [addLike DEBUG] Validation failed: Invalid Movie ID ---"); // <<< Log Validation Fail
+        console.log("--- [addLike DEBUG] Validation failed: Invalid Movie ID ---");
         return res.status(400).json({ success: false, message: 'Please provide a valid movie ID (number).' });
     }
 
     try {
+        // --- Database Interaction (RESTORED) ---
+        console.log("--- [addLike DEBUG] Preparing to call User.findByIdAndUpdate ---"); // Log Before DB Call
 
-        console.log("--- [addLike DEBUG] Skipping database interaction ---"); // <<< Log Skip DB
         // Find the user by ID and add the movieId to their 'likedMovies' array.
         // $addToSet prevents duplicate entries in the array.
         const user = await User.findByIdAndUpdate(
@@ -122,44 +121,40 @@ exports.addLike = async (req, res) => { // Keep async because of User.findByIdAn
             { new: true, runValidators: true } // Options: return the updated document, run schema validations
         );
 
-        console.log("--- [addLike DEBUG] User.findByIdAndUpdate completed ---"); // <<< Log After DB Call (if successful)
-        // console.log("--- [addLike DEBUG] User result:", user ? user.toObject() : 'null'); // Optional: Log user result briefly
+        console.log("--- [addLike DEBUG] User.findByIdAndUpdate completed ---"); // Log After DB Call (only if successful)
+        // -----------------------------------------
 
-        // Handle case where user might not be found (e.g., ID mismatch, though unlikely after 'protect').
+        // Handle case where user might not be found
         if (!user) {
-            console.log("--- [addLike DEBUG] User not found after update attempt ---"); // <<< Log User Not Found
-            // Note: This log might appear if the findByIdAndUpdate itself succeeded but found no matching user.
+            console.log("--- [addLike DEBUG] User not found after update attempt ---");
             return res.status(404).json({ success: false, message: 'User not found' });
         }
 
-        // --- Call Trigger Function ---
-        console.log(`--- [addLike DEBUG] DB Update successful, about to call triggerRecommendationUpdate for userId: ${userId} ---`); // <<< Log Before Trigger
-
         // --- Trigger Recommendation Update (Fire-and-Forget) ---
-        // Call the function to notify the Python service. This call returns immediately.
-        triggerRecommendationUpdate(userId);
+        console.log(`--- [addLike DEBUG] DB Update successful, about to call triggerRecommendationUpdate for userId: ${userId} ---`);
+        triggerRecommendationUpdate(userId); // Call the trigger function
+        console.log("--- [addLike DEBUG] Returned from triggerRecommendationUpdate call ---");
         // ----------------------------------------------------
-        console.log("--- [addLike DEBUG] Returned from triggerRecommendationUpdate call ---"); // <<< Log After Trigger Call
 
-        console.log("--- [addLike DEBUG] Preparing 200 OK response ---"); // <<< Log Before Response
-        // Send a success response back to the frontend immediately.
-        // Updated message reflects that the update was initiated, not completed.
+        console.log("--- [addLike DEBUG] Preparing 200 OK response ---");
         res.status(200).json({
             success: true,
             message: 'Movie liked successfully. Recommendation update initiated.',
-            likedMovies: user.likedMovies // Return the user's full updated list of liked movies.
+            likedMovies: user.likedMovies
         });
-        console.log("--- [addLike DEBUG] Sent 200 OK response ---"); // <<< Log After Response (might not show if function terminates)
+        console.log("--- [addLike DEBUG] Sent 200 OK response ---");
 
     } catch (error) {
         // --- Enhanced Catch Block Logging ---
-        console.error('--- [addLike DEBUG] ERROR Caught in addLike controller ---'); // <<< Log Catch Entry
-        console.error('--- [addLike DEBUG] Error Message:', error.message);       // <<< Log Error Message
-        console.error('--- [addLike DEBUG] Error Stack:', error.stack);         // <<< Log Error Stack (Important!)
-        // console.error('--- [addLike DEBUG] Full Error Object:', error);       // <<< Log Full Error (can be verbose)        res.status(500).json({ success: false, message: 'Server error while liking movie.' });
+        console.error('--- [addLike DEBUG] ERROR Caught in addLike controller ---'); // Log Catch Entry
+        console.error('--- [addLike DEBUG] Error Message:', error.message);       // Log Error Message
+        console.error('--- [addLike DEBUG] Error Stack:', error.stack);         // Log Error Stack (Important!)
+        // console.error('--- [addLike DEBUG] Full Error Object:', error);       // Log Full Error (can be verbose)
+        // ------------------------------------
+        res.status(500).json({ success: false, message: 'Server error while liking movie' });
     }
 
-    console.log("--- [addLike DEBUG] Function finished ---"); // <<< Log End (might not show if function terminates)
+    console.log("--- [addLike DEBUG] Function finished ---"); // Log Function End
 };
 
 // @desc    Get the list of liked movie IDs for the logged-in user
