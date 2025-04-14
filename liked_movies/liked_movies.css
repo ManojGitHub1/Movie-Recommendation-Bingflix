@@ -299,42 +299,41 @@ body {
 
 /* Add or replace these styles in liked_movies.css */
 
+/* Add or replace these styles in liked_movies.css */
+
 .page-header {
   padding: 50px 0 40px 0;
   margin-bottom: 50px;
-  border-bottom: none; /* Remove the main border */
+  border-bottom: 1px solid #252525; /* Keep a very subtle border */
   text-align: left;
-  position: relative; /* Needed for the pseudo-element */
 }
 
 .page-header h1 {
-  font-size: 40px;
+  font-size: 38px;        /* Slightly adjust size if needed */
   font-weight: 600;
   color: #e0e0e0;
-  margin-bottom: 25px; /* Increased space for underline + text */
+  margin-bottom: 12px;
   letter-spacing: 1px;
-  display: inline-block; /* Allow underline to fit content width */
-  position: relative;    /* Needed for the pseudo-element */
-  padding-bottom: 10px;  /* Space between text and underline */
+  display: flex;          /* Use flexbox for alignment */
+  align-items: center;    /* Vertically align icon and text */
+  gap: 15px;              /* Space between icon and text */
 }
 
-/* The gradient underline */
-.page-header h1::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  height: 3px; /* Thickness of the underline */
-  width: 70%; /* Width of the underline (adjust as needed) */
-  background: linear-gradient(to right, #ff5722, #ff9800); /* Your gradient */
-  border-radius: 2px;
+/* Style the icon */
+.page-header h1 i {
+  font-size: 34px;         /* Size of the icon */
+  color: #ff7043;         /* Color for the icon (matches section headers) */
+  /* Optional: Add slight vertical adjustment if needed */
+  /* transform: translateY(2px); */
 }
 
 .page-header p {
-  font-size: 17px;
-  color: #999; /* Slightly lighter grey */
+  font-size: 16px;
+  color: #999;
   font-weight: 300;
   line-height: 1.6;
+  padding-left: calc(34px + 15px); /* Indent subtitle to align with text (icon size + gap) */
+  /* Remove padding-left if you prefer the subtitle left-aligned */
 }
 
 
