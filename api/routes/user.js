@@ -4,47 +4,58 @@ const router = express.Router();
 // Import the authentication middleware
 const { protect } = require('../middleware/auth');
 
-// Import controller functions (we will create these in the next step)
+// Import controller functions
+// Make sure ONLY functions that actually exist in userController.js AND are needed right now are listed here.
 const {
-    addLike,
-    getLikes,
-    getRecommendations,
-    // getUserProfile,
-    addSeriesLike,
-    // removeMovieLike,
-    // removeSeriesLike
-} = require('../controllers/userController'); // We'll create this controller file next
+    addLike,            // Exists
+    getLikes,           // Exists (and modified)
+    getRecommendations, // Exists
+    // getUserProfile,     // DOES NOT EXIST YET - Keep Commented Out
+    addSeriesLike,      // Exists (newly added)
+    // removeMovieLike,    // DOES NOT EXIST YET - Keep Commented Out
+    // removeSeriesLike    // DOES NOT EXIST YET - Keep Commented Out
 
-// Define the routes
+    // Important: Also make sure registerUser and loginUser are imported if they are in userController.js
+    // registerUser, // Example - uncomment if needed for routes below
+    // loginUser,    // Example - uncomment if needed for routes below
 
-// @desc    Add a movie to the user's liked list
-// @route   POST /api/user/likes
-// @access  Private (requires authentication)
-router.post('/likes', protect, addLike);
-router.delete('/likes/movie/:movieId', protect, removeMovieLike);
+} = require('../controllers/userController');
 
-// @desc    Get the list of liked movie IDs for the logged-in user
-// @route   GET /api/user/likes
-// @access  Private
-router.get('/likes', protect, getLikes);
+// === Public Auth Routes (Assuming these are defined elsewhere or add imports if needed) ===
+// router.post('/register', registerUser); // Example - uncomment if needed
+// router.post('/login', loginUser);       // Example - uncomment if needed
 
-// @desc    Get the list of recommended movie IDs for the logged-in user
-// @route   GET /api/user/recommendations
-// @access  Private
+
+// === Protected User Routes ===
+
+// --- Getting Data ---
+
+// Get Recommendations (Existing & Working)
 router.get('/recommendations', protect, getRecommendations);
 
-// Profile
-router.get('/profile', protect, getUserProfile);
+// Get All Likes (Movies & Series) (Existing Route, Modified Controller - Working)
+router.get('/likes', protect, getLikes);
 
-// Likes Series
+// Get User Profile (NOT IMPLEMENTED YET)
+// router.get('/profile', protect, getUserProfile); // <<< COMMENT OUT THIS LINE
+
+
+// --- Adding Likes ---
+
+// Add Movie Like (Existing & Working)
+router.post('/likes', protect, addLike);
+
+// Add Series Like (New & Working)
 router.post('/likes/series', protect, addSeriesLike);
-router.delete('/likes/series/:seriesId', protect, removeSeriesLike);
 
-/* Optional: Route for removing a like
-// @desc    Remove a movie from the user's liked list
-// @route   DELETE /api/user/likes/:movieId  // Or maybe POST /api/user/unlike
-// @access  Private
-router.delete('/likes/:movieId', protect, removeLike); // We'll add removeLike controller later if needed
-*/
+
+// --- Removing Likes (NOT IMPLEMENTED YET) ---
+
+// Remove Movie Like
+// router.delete('/likes/movie/:movieId', protect, removeMovieLike); // <<< COMMENT OUT THIS LINE
+
+// Remove Series Like
+// router.delete('/likes/series/:seriesId', protect, removeSeriesLike); // <<< COMMENT OUT THIS LINE
+
 
 module.exports = router;
