@@ -49,13 +49,7 @@ Bingflix transforms the movie browsing experience by combining a sleek interface
 - **❤️ User Preferences**: Like and save favorite movies and series
 - **📱 Responsive Design**: Seamless experience across all devices
 
-## 🏗️ Architecture & Technology Stack
-
-<div align="center">
-
-![Architecture Diagram](https://placeholder-image.com/architecture-diagram.png)
-
-</div>
+## 🏗️ Technology Stack
 
 ### 🎭 Frontend
 - **HTML5/CSS3/JavaScript**: Creating a responsive, intuitive user interface
@@ -137,7 +131,6 @@ The system analyzes multiple content attributes:
 - **Overview**: Identifies plot elements and storylines
 - **Genres**: Categorizes content by type
 - **Keywords**: Captures specific themes and elements
-- **Cast/Crew**: (Future enhancement) Identifies actor/director preferences
 
 ### Performance Optimization
 
@@ -160,7 +153,7 @@ After encountering Vercel's serverless function limitations (250MB package size 
 ### GCP Implementation Details
 
 1. **Project Setup**:
-   - Created dedicated GCP project (movie-recommendation-ml-456412)
+   - Created dedicated GCP project
    - Enabled Cloud Run, Artifact Registry, and Cloud Build APIs
    - Configured billing and permissions
 
