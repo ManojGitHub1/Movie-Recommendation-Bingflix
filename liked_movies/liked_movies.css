@@ -297,26 +297,44 @@ body {
   margin-bottom: 50px; /* Increased spacing between sections */
 }
 
+/* Add or replace these styles in liked_movies.css */
+
 .page-header {
-  padding: 50px 0 40px 0; /* Slightly more top padding, less bottom */
-  margin-bottom: 50px;  /* Increased space before the first section */
-  border-bottom: none;  /* Remove the border */
+  padding: 50px 0 40px 0;
+  margin-bottom: 50px;
+  border-bottom: none; /* Remove the main border */
   text-align: left;
+  position: relative; /* Needed for the pseudo-element */
 }
 
 .page-header h1 {
-  font-size: 40px;        /* Slightly larger */
+  font-size: 40px;
   font-weight: 600;
-  color: #e0e0e0;        /* Slightly softer white */
-  margin-bottom: 12px;   /* More space below title */
-  letter-spacing: 1.2px; /* Slightly wider spacing */
+  color: #e0e0e0;
+  margin-bottom: 25px; /* Increased space for underline + text */
+  letter-spacing: 1px;
+  display: inline-block; /* Allow underline to fit content width */
+  position: relative;    /* Needed for the pseudo-element */
+  padding-bottom: 10px;  /* Space between text and underline */
+}
+
+/* The gradient underline */
+.page-header h1::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 3px; /* Thickness of the underline */
+  width: 70%; /* Width of the underline (adjust as needed) */
+  background: linear-gradient(to right, #ff5722, #ff9800); /* Your gradient */
+  border-radius: 2px;
 }
 
 .page-header p {
-  font-size: 17px;        /* Slightly larger subtitle */
-  color: #888;           /* More muted grey */
+  font-size: 17px;
+  color: #999; /* Slightly lighter grey */
   font-weight: 300;
-  line-height: 1.6;       /* Ensure good line spacing */
+  line-height: 1.6;
 }
 
 
