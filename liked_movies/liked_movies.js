@@ -1,33 +1,29 @@
-// liked_movies.js - Displays Recommendations, Liked Movies, Liked Series with new UI
+// liked_movies.js - Displays Recommendations, Liked Movies, Liked Series with new UI + Enhanced Logging
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('[LikedMovies] DOM Content Loaded - New UI');
 
     // --- Configuration ---
-    const API_BASE_URL = '/api'; // Backend API
-    const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500'; // Poster images
-    const TMDB_API_KEY = 'd37c49fbb30e8f5eb1000b388ab5bf71'; // Your TMDB API key (needed for liked item details)
+    const API_BASE_URL = '/api';
+    const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
+    const TMDB_API_KEY = 'd37c49fbb30e8f5eb1000b388ab5bf71'; // Ensure this key is active
 
     // --- DOM Elements ---
     const recommendationsContainer = document.getElementById('recommendationsContainer');
     const likedMoviesContainer = document.getElementById('likedMoviesContainer');
     const likedSeriesContainer = document.getElementById('likedSeriesContainer');
 
-    // Check if containers exist
     if (!recommendationsContainer || !likedMoviesContainer || !likedSeriesContainer) {
-        console.error('[LikedMovies] CRITICAL: One or more content containers not found! Ensure IDs recommendationsContainer, likedMoviesContainer, likedSeriesContainer exist.');
+        console.error('[LikedMovies] CRITICAL: One or more content containers not found!');
+        alert("Error: Page structure is missing required elements. Cannot load content."); // User feedback
         return;
     }
-
-    // Sidebar elements (keep references for existing sidebar logic)
-    let sidebar = document.querySelector(".sidebar");
-    let closeBtn = document.querySelector("#btn");
-    let searchBtn = document.querySelector(".bx-search");
+    console.log('[LikedMovies] All content containers found.');
 
     // --- Authentication ---
     const token = localStorage.getItem('authToken');
     if (!token) {
-        console.log('[LikedMovies] No auth token found.');
+        console.warn('[LikedMovies] No auth token found. Displaying logged out messages.');
         displayLoggedOutMessage(recommendationsContainer, 'recommendations');
         displayLoggedOutMessage(likedMoviesContainer, 'liked movies');
         displayLoggedOutMessage(likedSeriesContainer, 'liked series');
@@ -40,143 +36,175 @@ document.addEventListener('DOMContentLoaded', function() {
     document.title = "My Stuff - Bingflix";
 
     // --- Load All Sections ---
-    // Use Promise.all to fetch recommendations and likes somewhat concurrently
+    console.log('[LikedMovies] Initiating data loading for all sections...');
     displayLoadingState(recommendationsContainer, 'recommendations');
     displayLoadingState(likedMoviesContainer, 'liked movies');
     displayLoadingState(likedSeriesContainer, 'liked series');
 
-    Promise.all([
+    // Fetch concurrently
+    Promise.allSettled([ // Use allSettled to see results even if one fails
         fetchRecommendations(token, recommendationsContainer),
         fetchLikesAndDetails(token, likedMoviesContainer, likedSeriesContainer)
-    ]).then(() => {
-        console.log("[LikedMovies] All loading promises settled.");
-        // Initialization of event listeners that depend on cards being present can go here
-        initializeCardEventListeners(); // Example
-    }).catch(error => {
-        console.error("[LikedMovies] Error during initial data loading:", error);
-        // Display a general error maybe? Specific errors handled in fetch functions
+    ]).then((results) => {
+        console.log("[LikedMovies] Data loading promises settled. Results:", results);
+        // Check results for errors if needed
+        results.forEach((result, index) => {
+            if (result.status === 'rejected') {
+                console.error(`[LikedMovies] Loading failed for section ${index === 0 ? 'Recommendations' : 'Likes'}:`, result.reason);
+            }
+        });
+        // Initialize event listeners after potential content is loaded
+        initializeCardEventListeners();
     });
 
 }); // End DOMContentLoaded
 
 // ================================================
-//      FETCH & DISPLAY FUNCTIONS
+//      FETCH & DISPLAY FUNCTIONS (with logging)
 // ================================================
 
 async function fetchRecommendations(token, container) {
-    console.log('[LikedMovies] Fetching recommendations...');
+    const sectionName = 'Recommendations';
+    console.log(`[LikedMovies] ${sectionName}: Starting fetch...`);
     try {
-        const response = await fetch(`/api/user/recommendations`, {
+        const url = `${API_BASE_URL}/user/recommendations`;
+        console.log(`[LikedMovies] ${sectionName}: Fetching from ${url}`);
+        const response = await fetch(url, {
             method: 'GET',
             headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
         });
+        console.log(`[LikedMovies] ${sectionName}: Received response status ${response.status}`);
 
         if (!response.ok) {
-            throw new Error(`HTTP ${response.status} fetching recommendations`); // Let catch block handle
+            const errorText = await response.text(); // Try to get error body
+            console.error(`[LikedMovies] ${sectionName}: Fetch failed! Status: ${response.status}, Body: ${errorText}`);
+            // Throw error to be caught by the catch block below
+            throw new Error(`HTTP ${response.status} fetching ${sectionName.toLowerCase()}`);
         }
 
         const data = await response.json();
+        console.log(`[LikedMovies] ${sectionName}: Successfully parsed JSON response:`, data);
 
         if (!data || !Array.isArray(data.recommendations)) {
-            console.error('[LikedMovies] Invalid recommendations data format:', data);
-            throw new Error("Unexpected data format for recommendations.");
+            console.error(`[LikedMovies] ${sectionName}: Invalid data format received. 'recommendations' array missing or not an array.`, data);
+            throw new Error(`Unexpected data format for ${sectionName.toLowerCase()}.`);
         }
 
-        console.log(`[LikedMovies] Received ${data.recommendations.length} recommendations.`);
-        displayItems(data.recommendations, container, 'movie', 'recommendation'); // Recommendations are movies
+        console.log(`[LikedMovies] ${sectionName}: Received ${data.recommendations.length} items.`);
+        displayItems(data.recommendations, container, 'movie', 'recommendation'); // Display items
 
     } catch (error) {
-        console.error('[LikedMovies] Error fetching recommendations:', error);
-        displayErrorMessage(container, 'recommendations');
+        console.error(`[LikedMovies] ${sectionName}: CATCH block error:`, error);
+        displayErrorMessage(container, sectionName.toLowerCase()); // Display error message in UI
+        throw error; // Re-throw error so Promise.allSettled knows it failed
     }
 }
 
 async function fetchLikesAndDetails(token, moviesContainer, seriesContainer) {
-    console.log('[LikedMovies] Fetching liked item IDs...');
+    const sectionName = 'Likes';
+    console.log(`[LikedMovies] ${sectionName}: Starting fetch for liked IDs...`);
     try {
-        const response = await fetch(`/api/user/likes`, {
+        const url = `${API_BASE_URL}/user/likes`;
+        console.log(`[LikedMovies] ${sectionName}: Fetching from ${url}`);
+        const response = await fetch(url, {
             method: 'GET',
             headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
         });
+        console.log(`[LikedMovies] ${sectionName}: Received liked IDs response status ${response.status}`);
 
         if (!response.ok) {
-            throw new Error(`HTTP ${response.status} fetching likes`);
+             const errorText = await response.text();
+             console.error(`[LikedMovies] ${sectionName}: Fetch for IDs failed! Status: ${response.status}, Body: ${errorText}`);
+             throw new Error(`HTTP ${response.status} fetching ${sectionName.toLowerCase()} IDs`);
         }
 
         const data = await response.json();
-        console.log('[LikedMovies] Received liked IDs:', data);
+        console.log(`[LikedMovies] ${sectionName}: Successfully parsed liked IDs JSON:`, data);
 
         if (!data || !Array.isArray(data.likedMovies) || !Array.isArray(data.likedSeries)) {
-             console.error('[LikedMovies] Invalid likes data format:', data);
-             throw new Error("Unexpected data format for likes.");
+             console.error(`[LikedMovies] ${sectionName}: Invalid liked IDs data format received.`, data);
+             throw new Error(`Unexpected data format for ${sectionName.toLowerCase()} IDs.`);
         }
 
         const likedMovieIds = data.likedMovies;
         const likedSeriesIds = data.likedSeries;
+        console.log(`[LikedMovies] ${sectionName}: Found ${likedMovieIds.length} movie IDs and ${likedSeriesIds.length} series IDs.`);
 
-        // Fetch details for movies and series concurrently
+        // Fetch details only if there are IDs
+        console.log(`[LikedMovies] ${sectionName}: Fetching details from TMDB...`);
         const [movieDetails, seriesDetails] = await Promise.all([
             fetchDetailsForIds(likedMovieIds, 'movie'),
-            fetchDetailsForIds(likedSeriesIds, 'tv') // Use 'tv' for TMDB series type
+            fetchDetailsForIds(likedSeriesIds, 'tv')
         ]);
+        console.log(`[LikedMovies] ${sectionName}: Finished fetching details. Got ${movieDetails.length} movie details, ${seriesDetails.length} series details.`);
 
-        console.log(`[LikedMovies] Fetched details for ${movieDetails.length} movies and ${seriesDetails.length} series.`);
-
-        // Display items in their respective containers
+        // Display items
         displayItems(movieDetails, moviesContainer, 'movie', 'liked-movie');
         displayItems(seriesDetails, seriesContainer, 'tv', 'liked-series');
 
     } catch (error) {
-        console.error('[LikedMovies] Error fetching or processing likes:', error);
-        displayErrorMessage(moviesContainer, 'liked movies');
+        console.error(`[LikedMovies] ${sectionName}: CATCH block error during fetch/processing:`, error);
+        displayErrorMessage(moviesContainer, 'liked movies'); // Show errors in both sections
         displayErrorMessage(seriesContainer, 'liked series');
+        throw error; // Re-throw
     }
 }
 
-// Helper function to fetch full details for an array of IDs from TMDB
+// Helper function to fetch full details for an array of IDs from TMDB (with logging)
 async function fetchDetailsForIds(ids, type) {
     if (!ids || ids.length === 0) {
-        return []; // No IDs to fetch
+        console.log(`[LikedMovies] TMDB Details: No IDs provided for type '${type}', skipping fetch.`);
+        return [];
     }
+    console.log(`[LikedMovies] TMDB Details: Fetching details for ${ids.length} IDs of type '${type}'...`);
 
-    const apiKey = 'd37c49fbb30e8f5eb1000b388ab5bf71'; // Use your key
+    const apiKey = 'd37c49fbb30e8f5eb1000b388ab5bf71';
     const detailPromises = ids.map(id => {
         const url = `https://api.themoviedb.org/3/${type}/${id}?api_key=${apiKey}&language=en-US`;
+        // console.log(`[LikedMovies] TMDB Details: Fetching ${url}`); // Uncomment for extreme verbosity
         return fetch(url)
             .then(res => {
                 if (!res.ok) {
-                    console.warn(`Failed to fetch details for ${type} ID ${id}: ${res.status}`);
-                    return null; // Don't break Promise.all for one failure
+                    // Log warning but don't throw, let Promise.all continue
+                    console.warn(`[LikedMovies] TMDB Details: Fetch failed for ${type} ID ${id}. Status: ${res.status}`);
+                    return null;
                 }
+                // console.log(`[LikedMovies] TMDB Details: Success for ${type} ID ${id}.`); // Uncomment for extreme verbosity
                 return res.json();
             })
             .catch(err => {
-                console.error(`Network error fetching details for ${type} ID ${id}:`, err);
-                return null;
+                console.error(`[LikedMovies] TMDB Details: Network error for ${type} ID ${id}:`, err);
+                return null; // Return null on error
             });
     });
 
     const results = await Promise.all(detailPromises);
-    return results.filter(item => item !== null); // Filter out failed fetches
+    const successfulResults = results.filter(item => item !== null);
+    console.log(`[LikedMovies] TMDB Details: Successfully got details for ${successfulResults.length} out of ${ids.length} ${type} IDs.`);
+    return successfulResults;
 }
 
 
 // ================================================
-//      DISPLAY & UI FUNCTIONS
+//      DISPLAY & UI FUNCTIONS (mostly unchanged)
 // ================================================
 
-// Displays items (movies/series) in the specified container using the new card style
-function displayItems(items, container, itemType, cardType) { // cardType: 'recommendation', 'liked-movie', 'liked-series'
-    container.innerHTML = ''; // Clear loading/previous content
+function displayItems(items, container, itemType, cardType) {
+    container.innerHTML = ''; // Clear previous
 
     if (!items || items.length === 0) {
         let message = '';
+        // Determine appropriate empty message based on cardType
         if (cardType === 'recommendation') message = 'No recommendations available yet. Try liking some movies!';
         else if (cardType === 'liked-movie') message = 'You haven\'t liked any movies yet.';
         else if (cardType === 'liked-series') message = 'You haven\'t liked any series yet.';
+        else message = 'No items to display.'; // Default fallback
+
+        console.log(`[LikedMovies] Displaying empty message for ${cardType} in container ${container.id}: "${message}"`);
         container.innerHTML = `<p class="empty-message">${message}</p>`;
         return;
     }
+    console.log(`[LikedMovies] Displaying ${items.length} items of type ${cardType} in container ${container.id}`);
 
     items.forEach(itemData => {
         if (itemData && itemData.id) {
@@ -188,35 +216,28 @@ function displayItems(items, container, itemType, cardType) { // cardType: 'reco
     });
 }
 
-// Creates a card element based on the new UI template
-function createCard_NewStyle(itemData, itemType, cardType) { // itemType: 'movie' or 'tv'
+// Creates a card element based on the new UI template (Unchanged from previous step)
+function createCard_NewStyle(itemData, itemType, cardType) {
     const card = document.createElement('div');
     card.classList.add('card');
     if (cardType === 'liked-movie' || cardType === 'liked-series') {
-        card.classList.add('is-liked'); // Add class to target delete button display
+        card.classList.add('is-liked');
     }
-    card.dataset.itemId = itemData.id; // Store ID on card
-    card.dataset.itemType = itemType; // Store type on card
+    card.dataset.itemId = itemData.id;
+    card.dataset.itemType = itemType;
 
     const posterPath = itemData.poster_path ? `${TMDB_IMAGE_BASE_URL}${itemData.poster_path}` : '';
-    card.style.backgroundImage = posterPath ? `url('${posterPath}')` : 'none'; // Set background
-    if (!posterPath) {
-         card.style.backgroundColor = '#333'; // Fallback background
-    }
-
+    card.style.backgroundImage = posterPath ? `url('${posterPath}')` : 'none';
+    if (!posterPath) card.style.backgroundColor = '#333';
 
     const releaseDate = itemType === 'movie' ? itemData.release_date : itemData.first_air_date;
     const formattedDate = releaseDate ? new Date(releaseDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A';
     const title = itemType === 'movie' ? itemData.title : itemData.name;
     const overview = itemData.overview || 'No overview available.';
-    // Tagline might not always be present, especially for series from list endpoints
     const tagline = itemData.tagline || '';
 
-
-    // --- Delete Button (Only for liked items) ---
     let deleteButtonHTML = '';
     if (cardType === 'liked-movie' || cardType === 'liked-series') {
-        // Add data attributes needed for delete functionality
         deleteButtonHTML = `
             <button class="delete-like-btn bx bx-trash"
                     title="Remove from Likes"
@@ -233,42 +254,38 @@ function createCard_NewStyle(itemData, itemType, cardType) { // itemType: 'movie
             <div class="title">${title || 'Title Unavailable'}</div>
             ${tagline ? `<div class="tagline">${tagline}</div>` : ''}
         </div>
-        <div class="sinopse"> <!-- Hover content -->
+        <div class="sinopse">
             <div class="content-sinopse">
                 <div class="text">${overview}</div>
                 <button class="view-details-btn" data-id="${itemData.id}" data-type="${itemType}">View Details</button>
             </div>
         </div>
     `;
-
     return card;
 }
 
 
-// --- Loading / Error Message Helpers ---
+// --- Loading / Error Message Helpers (Unchanged) ---
 function displayLoadingState(container, type) {
     if(container) container.innerHTML = `<p class="loading-message">Loading ${type}...</p>`;
 }
-
 function displayErrorMessage(container, type) {
      if(container) container.innerHTML = `<p class="empty-message">Could not load ${type}. Please try again later.</p>`;
 }
-
 function displayLoggedOutMessage(container, type){
     if(container) container.innerHTML = `<p class="empty-message">Please log in to see your ${type}.</p>`;
 }
 
 // ================================================
-//      EVENT LISTENERS
+//      EVENT LISTENERS (Unchanged)
 // ================================================
-
 function initializeCardEventListeners() {
-    const mainContentArea = document.querySelector('.home-section'); // Delegate listeners to parent
-
+    const mainContentArea = document.querySelector('.home-section');
     if (!mainContentArea) {
-        console.error("Cannot initialize card listeners: .home-section not found.");
+        console.error("[LikedMovies] Cannot initialize card listeners: .home-section not found.");
         return;
     }
+    console.log("[LikedMovies] Initializing card event listeners on .home-section");
 
     mainContentArea.addEventListener('click', function(event) {
         // --- Handle "View Details" Button Click ---
@@ -276,97 +293,63 @@ function initializeCardEventListeners() {
             const button = event.target;
             const itemId = button.dataset.id;
             const itemType = button.dataset.type;
-            if (itemId && itemType) {
-                handlePosterClick(itemType, itemId); // Reuse existing navigation function
-            }
+            console.log(`[LikedMovies] 'View Details' clicked: Type=${itemType}, ID=${itemId}`);
+            if (itemId && itemType) handlePosterClick(itemType, itemId);
         }
-
         // --- Handle "Delete Like" Button Click ---
-        if (event.target.classList.contains('delete-like-btn')) {
+        else if (event.target.classList.contains('delete-like-btn')) {
             const button = event.target;
             const itemId = button.dataset.id;
-            const itemType = button.dataset.type; // 'movie' or 'tv'
-
-            // Prevent the click from triggering card navigation if delete button is inside card
-            event.stopPropagation();
-
-            if (itemId && itemType) {
-                console.log(`Attempting to delete ${itemType} with ID: ${itemId}`);
-                // Call the function to handle the deletion (we'll implement this in Step 3)
-                 handleDeleteLike(button, itemType, itemId);
-            }
+            const itemType = button.dataset.type;
+            event.stopPropagation(); // Prevent card click
+            console.log(`[LikedMovies] 'Delete Like' clicked: Type=${itemType}, ID=${itemId}`);
+            if (itemId && itemType) handleDeleteLike(button, itemType, itemId);
         }
-
-        // --- Handle Card Click (if not clicking a specific button) ---
-        // Find the closest ancestor card element
-        const card = event.target.closest('.card');
-        // Check if the click was directly on the card or its non-interactive children,
-        // AND not on one of the buttons we handle separately.
-        if (card && !event.target.closest('button')) {
-             const itemId = card.dataset.itemId;
-             const itemType = card.dataset.itemType;
-             if (itemId && itemType) {
-                 handlePosterClick(itemType, itemId);
-             }
+        // --- Handle Card Click ---
+        else {
+            const card = event.target.closest('.card');
+            if (card && !event.target.closest('button')) { // Ensure click is on card, not a button
+                 const itemId = card.dataset.itemId;
+                 const itemType = card.dataset.itemType;
+                 console.log(`[LikedMovies] Card clicked: Type=${itemType}, ID=${itemId}`);
+                 if (itemId && itemType) handlePosterClick(itemType, itemId);
+            }
         }
     });
 }
 
-// --- Placeholder for Delete Function (To be implemented in Step 3) ---
+// --- Placeholder for Delete Function (Unchanged - Needs implementation later) ---
 async function handleDeleteLike(buttonElement, itemType, itemId) {
-    // 1. Confirm with user (optional but recommended)
-    if (!confirm(`Are you sure you want to remove this ${itemType} from your likes?`)) {
-        return;
-    }
-
+    if (!confirm(`Are you sure you want to remove this ${itemType} from your likes?`)) return;
     console.log(`Confirmed deletion for ${itemType} ID ${itemId}. (Backend call not implemented yet)`);
-    // 2. Get auth token
-    // 3. Determine correct DELETE endpoint (`/api/user/likes/movie/${itemId}` or `/api/user/likes/series/${itemId}`)
-    // 4. Make fetch DELETE request to backend
-    // 5. On successful response (e.g., 200 or 204):
-    //    - Remove the card element from the DOM: buttonElement.closest('.card').remove();
-    //    - Optionally show a success message
-    // 6. On error:
-    //    - Show an error message to the user
-
-    // --- TEMPORARY: Remove card visually for demo ---
-     buttonElement.closest('.card').remove();
-     alert(`${itemType} removed visually (backend delete not yet implemented).`);
-    // --- END TEMPORARY ---
-
+    // TODO: Implement Step 3 - Backend Call for Delete
+    // TEMPORARY VISUAL REMOVAL:
+    buttonElement.closest('.card')?.remove(); // Use optional chaining
+    alert(`${itemType} removed visually (backend delete not yet implemented).`);
 }
 
-
-// --- Helper Function for Click Handling (Navigates to details page) ---
-// (Same as your previous version)
+// --- Helper Function for Click Handling (Navigates) (Unchanged) ---
 function handlePosterClick(mediaType, mediaId) {
     console.log(`[LikedMovies] Navigating - Type: ${mediaType}, ID: ${mediaId}`);
     let url = '';
-    if (mediaType === 'movie') {
-        url = `../movie_details/movie_details.html?type=movie&id=${mediaId}`;
-    } else if (mediaType === 'tv') {
-        url = `../series_details/series_details.html?type=tv&id=${mediaId}`;
-    } else {
-        console.error('[LikedMovies] Unknown media type for navigation:', mediaType);
-        return;
-    }
+    if (mediaType === 'movie') url = `../movie_details/movie_details.html?type=movie&id=${mediaId}`;
+    else if (mediaType === 'tv') url = `../series_details/series_details.html?type=tv&id=${mediaId}`;
+    else { console.error('[LikedMovies] Unknown media type for navigation:', mediaType); return; }
     window.location.href = url;
 }
 
-
 // ================================================
-//      EXISTING SIDEBAR, SEARCH, LOGOUT LOGIC
+//      EXISTING SIDEBAR, SEARCH, LOGOUT LOGIC (Keep As Is)
 // ================================================
-// (Keep exactly as provided in your last JS snippet)
+// (Your existing sidebar, search, and logout JS code should be here)
 let sidebar = document.querySelector(".sidebar");
 let closeBtn = document.querySelector("#btn");
 let searchBtn = document.querySelector(".bx-search");
-// ... (rest of sidebar, search, logout logic remains unchanged) ...
-if (closeBtn && sidebar) { closeBtn.addEventListener("click", ()=>{ sidebar.classList.toggle("open"); menuBtnChange(); }); }
-if (searchBtn && sidebar) { searchBtn.addEventListener("click", ()=>{ sidebar.classList.toggle("open"); menuBtnChange(); }); }
+if (closeBtn && sidebar) { closeBtn.addEventListener("click", ()=>{ sidebar.classList.toggle("open"); menuBtnChange(); }); } else { console.warn("Sidebar close button/element not found."); }
+if (searchBtn && sidebar) { searchBtn.addEventListener("click", ()=>{ sidebar.classList.toggle("open"); menuBtnChange(); }); } else { console.warn("Sidebar search button/element not found."); }
 function menuBtnChange() { if (!sidebar || !closeBtn) return; if(sidebar.classList.contains("open")){ closeBtn.classList.replace("bx-menu", "bx-menu-alt-right"); } else { closeBtn.classList.replace("bx-menu-alt-right","bx-menu"); } }
-function searchMovies() { const searchInput = document.getElementById('searchInput'); if (!searchInput) return; const query = searchInput.value.trim(); if (query.length === 0) return; const url = `../results/results.html?query=${encodeURIComponent(query)}`; window.location.href = url; }
-const searchInput = document.getElementById('searchInput'); if (searchInput) { searchInput.addEventListener('keydown', function(event) { if (event.key === 'Enter') { event.preventDefault(); searchMovies(); } }); }
-const logoutButton = document.getElementById('log_out'); if (logoutButton) { logoutButton.addEventListener('click', (e) => { e.preventDefault(); localStorage.removeItem('authToken'); window.location.href = '../auth/login.html'; }); }
+function searchMovies() { const searchInput = document.getElementById('searchInput'); if (!searchInput) {console.error("Search input not found."); return;} const query = searchInput.value.trim(); if (query.length === 0) {console.log("Search query empty.");return;} const url = `../results/results.html?query=${encodeURIComponent(query)}`; window.location.href = url; }
+const searchInput = document.getElementById('searchInput'); if (searchInput) { searchInput.addEventListener('keydown', function(event) { if (event.key === 'Enter') { event.preventDefault(); searchMovies(); } }); } else { console.warn("Search input not found for keydown listener.");}
+const logoutButton = document.getElementById('log_out'); if (logoutButton) { logoutButton.addEventListener('click', (e) => { e.preventDefault(); localStorage.removeItem('authToken'); window.location.href = '../auth/login.html'; }); } else { console.warn("Logout button not found."); }
 
-console.log('[LikedMovies] New UI Script finished loading.');
+console.log('[LikedMovies] New UI Script finished loading, includes diagnostics.');
