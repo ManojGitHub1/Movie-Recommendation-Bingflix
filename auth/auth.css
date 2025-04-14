@@ -37,7 +37,7 @@
     position: relative;
 
     /* *** ADJUSTED Vertical Margin *** */
-    margin: 5% auto; /* Reduced top margin slightly, auto for horizontal */
+    margin: 2% auto; /* Reduced top margin slightly, auto for horizontal */
     /* Or try a fixed px value if % is problematic: margin: 60px auto; */
 
     /* Keep the visual styles */
