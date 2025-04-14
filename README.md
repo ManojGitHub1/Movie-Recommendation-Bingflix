@@ -12,22 +12,23 @@
 </div>
 
 ## Original Source
-```
-Note: This project is originally built and designed by my talented friend ([Abhilash Sarangi](https://github.com/dev1abhi)). I had the opportunity to contribute a small part to it — and I'm incredibly grateful for that. All major credits go to my friend for turning this brilliant concept into reality.
-Please checkout the original source [bingeflix](https://github.com/dev1abhi/Bingflix-Website)
+📝 Note
+This project was originally created and designed by my incredibly talented friend, Abhilash Sarangi. I was fortunate to contribute a small part to this amazing initiative, and I’m truly grateful for the opportunity. All major credits go to him for bringing this brilliant concept to life.
 
-**P.S. If you like this project, please ⭐ the repository. It truly motivates my friend to keep building and innovating! 🙌**
+✨ Check out the original project here: BingeFlix
 
-🤝 My Contribution
-Though this amazing website is the brainchild of my friend, I was fortunate enough to collaborate and add some tech behind the scenes:
-🔐 Authentication System: Implemented secure user sign-up and login flow
-☁️ Cloud Integration: Used GCP for Cloud Run(Serverless) and Cloud Registory(Docker Container)
-🧠 Machine Learning Recommender System: Built and integrated a movie recommendation system that provides personalized suggestions
-💾 Database Management: MongoDB Atlas for Structured and managed the user data and movie preferences in the cloud
-🛰️ Node Application: For fetching and storing data in DB, debloyed in Vercel(Serverless).
+P.S. If you love this project, don’t forget to ⭐ the repository—it motivates my friend to keep building and innovating! 🙌
 
-A heartfelt thank you to my friend for allowing me to be a part of this. It was an absolute pleasure contributing to something this cool and cinematic! 🚀
-```
+🤝 My Contributions
+While the core idea and design belong to my friend, I had the privilege of collaborating and adding some technical enhancements:
+
+🔐 Authentication System – Implemented a secure user sign-up and login flow.
+☁️ Cloud Integration – Utilized GCP for Cloud Run (Serverless) and Cloud Registry (Docker Container).
+🧠 Machine Learning Recommender System – Built and integrated a personalized movie recommendation engine.
+💾 Database Management – Used MongoDB Atlas to structure and manage user data & movie preferences in the cloud.
+🛰️ Node Application – Developed backend logic for fetching/storing data in DB, deployed on Vercel (Serverless).
+
+A heartfelt thank you to my friend for letting me be part of this journey. It was an absolute pleasure contributing to such a cool and cinematic project!
 
 ## 🎬 Project Overview
 
