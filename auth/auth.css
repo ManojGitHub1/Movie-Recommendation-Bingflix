@@ -55,6 +55,8 @@
     -webkit-backdrop-filter: blur(12px) saturate(110%);
 
     padding: 40px 50px;
+    left: 50%; /* Centered horizontally */
+    top: 50%; /* Centered vertically */
     border-radius: 16px; /* Keep rounded corners */
     /* *** SUBTLER BORDER *** */
     border: 1px solid rgba(255, 255, 255, 0.08); /* Even fainter border */
