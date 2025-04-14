@@ -3,18 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Content</title> <!-- Title will be updated by JS -->
+    <title>Your Content</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Press+Start+2P&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
-    <!-- Using Poppins from the new template as well -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
-    <!-- Link to the NEW CSS file -->
-    <link rel="stylesheet" href="liked_movies.css">
-</head>
+    <link rel="stylesheet" href="liked_movies.css"> 
 <body>
 
+  <!-- Sidebar -->
   <div class="sidebar">
     <div class="logo-details">
       <i class='bx bxl-c-plus-plus icon'></i>
@@ -24,7 +22,7 @@
     <ul class="nav-list">
       <li>
           <i class='bx bx-search' ></i>
-         <input id="searchInput" type="text" placeholder="Search..." onkeydown="if (event.keyCode === 13) searchMovies()">
+         <input id="searchInput" type="text" placeholder="Search..." onkeydown="if (event.keyCode === 13) performSearch(this.value)"> <!-- Changed to call performSearch directly -->
          <span class="tooltip">Search</span>
       </li>
       <li>
@@ -42,14 +40,14 @@
          <span class="tooltip">Party</span>
       </li>
       <li>
-       <a href="#">
+       <a href="#"> <!-- TODO: Link to future profile page -->
          <i class='bx bx-user' ></i>
          <span class="links_name">User</span>
        </a>
        <span class="tooltip">User</span>
      </li>
      <li>
-       <a href="liked_movies.html">
+       <a href="liked_movies.html"> <!-- Link to this page -->
          <i class='bx bx-heart' ></i>
          <span class="links_name">Liked</span>
        </a>
@@ -64,6 +62,7 @@
      </li>
      <li class="profile">
          <div class="profile-details">
+           <!-- Consider fetching user details later -->
            <img src="../assets/virat.png" alt="profileImg">
            <div class="name_job">
              <div class="name">Manoj </div>
@@ -75,11 +74,18 @@
     </ul>
   </div>
 
-  <div class="main-content" style="margin-left: 80px; padding: 20px; transition: margin-left 0.5s ease;">
+  <!-- Main Content Area -->
+  <div class="main-content" style="margin-left: 80px; padding-top: 0; transition: margin-left 0.5s ease;">
+
+    <!-- Top Header -->
+    <div class="page-header">
+        <h1>Your Content Library</h1>
+        <p>Explore your recommendations and liked movies & series.</p>
+    </div>
 
     <!-- Recommendations Section -->
     <section id="recommendationsSection" class="content-section">
-        <h2>Your Movie Recommendations</h2>
+        <h2><i class='bx bx-movie-play'></i> Recommendations</h2>
         <div id="recommendationsContainer" class="container">
             <!-- Cards will be injected here by JS -->
              <p class="loading-message">Loading recommendations...</p>
@@ -88,7 +94,7 @@
 
     <!-- Liked Movies Section -->
     <section id="likedMoviesSection" class="content-section">
-        <h2>Your Liked Movies</h2>
+        <h2><i class='bx bxs-heart-circle'></i> Liked Movies</h2>
         <div id="likedMoviesContainer" class="container">
             <!-- Cards will be injected here by JS -->
              <p class="loading-message">Loading liked movies...</p>
@@ -97,7 +103,7 @@
 
     <!-- Liked Series Section -->
     <section id="likedSeriesSection" class="content-section">
-        <h2>Your Liked Series</h2>
+        <h2><i class='bx bxs-heart-circle'></i> Liked Series</h2>
         <div id="likedSeriesContainer" class="container">
             <!-- Cards will be injected here by JS -->
              <p class="loading-message">Loading liked series...</p>
