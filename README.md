@@ -2,8 +2,6 @@
 
 <div align="center">
 
-![Bingflix Banner](https://placeholder-image.com/bingflix-banner.png)
-
 *A state-of-the-art movie browsing platform with personalized ML-powered recommendations*
 
 [![Made with Node.js](https://img.shields.io/badge/Made%20with-Node.js-339933?style=for-the-badge&logo=node.js)](https://nodejs.org)
@@ -12,6 +10,24 @@
 [![ML on GCP](https://img.shields.io/badge/ML%20on-Google%20Cloud-4285F4?style=for-the-badge&logo=google-cloud)](https://cloud.google.com/run)
 
 </div>
+
+## Original Source
+```
+Note: This project is originally built and designed by my talented friend ([Abhilash Sarangi](https://github.com/dev1abhi)). I had the opportunity to contribute a small part to it — and I'm incredibly grateful for that. All major credits go to my friend for turning this brilliant concept into reality.
+Please checkout the original source [bingeflix](https://github.com/dev1abhi/Bingflix-Website)
+
+**P.S. If you like this project, please ⭐ the repository. It truly motivates my friend to keep building and innovating! 🙌**
+
+🤝 My Contribution
+Though this amazing website is the brainchild of my friend, I was fortunate enough to collaborate and add some tech behind the scenes:
+🔐 Authentication System: Implemented secure user sign-up and login flow
+☁️ Cloud Integration: Used GCP for Cloud Run(Serverless) and Cloud Registory(Docker Container)
+🧠 Machine Learning Recommender System: Built and integrated a movie recommendation system that provides personalized suggestions
+💾 Database Management: MongoDB Atlas for Structured and managed the user data and movie preferences in the cloud
+🛰️ Node Application: For fetching and storing data in DB, debloyed in Vercel(Serverless).
+
+A heartfelt thank you to my friend for allowing me to be a part of this. It was an absolute pleasure contributing to something this cool and cinematic! 🚀
+```
 
 ## 🎬 Project Overview
 
@@ -106,51 +122,6 @@ The platform operates on a sophisticated workflow that spans multiple services:
 
 The recommendation engine employs sophisticated content-based filtering techniques to analyze movie attributes and identify similarities:
 
-```python
-# Core recommendation algorithm pseudocode
-def generate_recommendations(user_id):
-    # Fetch user's liked movies
-    liked_movies = get_user_likes(user_id)
-    
-    # Get detailed attributes for liked movies
-    liked_movie_details = fetch_movie_details(liked_movies)
-    
-    # Create feature corpus from movie attributes
-    corpus = []
-    for movie in liked_movie_details:
-        # Combine relevant text features
-        text = f"{movie['title']} {movie['overview']} {' '.join(movie['genres'])}"
-        corpus.append(text)
-    
-    # Apply TF-IDF vectorization
-    vectorizer = TfidfVectorizer(stop_words='english')
-    tfidf_matrix = vectorizer.fit_transform(corpus)
-    
-    # Create user profile by averaging liked movie vectors
-    user_profile = tfidf_matrix.mean(axis=0)
-    
-    # Fetch candidate movies (popular movies not already liked)
-    candidate_movies = get_candidate_movies(liked_movies)
-    candidate_details = fetch_movie_details(candidate_movies)
-    
-    # Vectorize candidate movies
-    candidate_corpus = [f"{movie['title']} {movie['overview']} {' '.join(movie['genres'])}" 
-                        for movie in candidate_details]
-    candidate_vectors = vectorizer.transform(candidate_corpus)
-    
-    # Calculate similarity scores
-    similarity_scores = cosine_similarity(user_profile, candidate_vectors)
-    
-    # Get top N recommendations
-    top_indices = similarity_scores.argsort()[0][-20:][::-1]
-    recommendations = [candidate_movies[i] for i in top_indices]
-    
-    # Save to database
-    save_recommendations(user_id, recommendations)
-    
-    return recommendations
-```
-
 ### Feature Engineering
 
 The system analyzes multiple content attributes:
@@ -224,7 +195,7 @@ After encountering Vercel's serverless function limitations (250MB package size 
 
 **Challenge**: Vercel serverless functions timed out (~10s limit) while waiting for ML processing (~19s with cold starts).
 
-**Solution**: Implemented an advanced fire-and-forget pattern:
+**Solution**: Implemented an advanced **fire-and-forget pattern**:
 - Backend sends non-blocking HTTP request to ML service
 - Request includes authentication token and user ID
 - ML service processes independently of API response cycle
@@ -275,15 +246,6 @@ After encountering Vercel's serverless function limitations (250MB package size 
 - Designed database schema for optimal query performance
 - Implemented proper connection cleanup to prevent leaks
 
-## 🔮 Future Enhancements
-
-- **Hybrid Recommendation System**: Combining content-based and collaborative filtering
-- **Real-time Recommendation Updates**: WebSocket integration for instant updates
-- **Advanced User Profiling**: Incorporating viewing history and engagement metrics
-- **Multi-factor Authentication**: Enhanced security options
-- **Accessibility Improvements**: WCAG compliance and screen reader optimization
-- **Progressive Web App**: Offline capabilities and push notifications
-
 ## 🛠️ Technologies Used
 
 - **Frontend**: HTML5, CSS3, JavaScript
@@ -299,9 +261,3 @@ After encountering Vercel's serverless function limitations (250MB package size 
 ## 📜 License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🙏 Acknowledgments
-
-- TMDB API for providing comprehensive movie and TV series data
-- MongoDB Atlas for reliable database hosting
-- Vercel and Google Cloud Platform for excellent cloud services
