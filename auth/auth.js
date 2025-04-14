@@ -79,9 +79,8 @@ function initializeAuthLogic() {
    * Updates the active state of the corresponding tab button.
    */
   function showAuthForm(formIdToShow) {
-    clearErrorMessages(); // Keep this
+    clearErrorMessages();
 
-    // Select forms within this function scope or ensure they are available
     const loginForm = document.getElementById('loginForm');
     const signupForm = document.getElementById('signupForm');
     if (!loginForm || !signupForm) {
@@ -98,8 +97,8 @@ function initializeAuthLogic() {
         signupForm.classList.add('active-form');
     }
 
-    // Update tab button active states (keep this part)
-    const tabButtons = document.querySelectorAll('#authModal .tab-button'); // Ensure selection if not global
+    // Update tab button active states
+    const tabButtons = document.querySelectorAll('#authModal .tab-button');
     tabButtons.forEach(button => {
         if (button.dataset.form === formIdToShow) {
             button.classList.add('active');

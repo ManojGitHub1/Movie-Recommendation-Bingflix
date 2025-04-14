@@ -1,4 +1,4 @@
-/* auth.css - Modern Cinematic Login Styling */
+/* auth.css - Modern Popup Card Login Styling */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
 * {
@@ -7,12 +7,10 @@
     box-sizing: border-box;
 }
 
-body {
-    font-family: 'Poppins', sans-serif;
-    /* This assumes auth.html is loaded standalone or its styles apply globally when modal is shown */
-}
+/* Apply font globally ONLY if this CSS is scoped or auth.html is standalone */
+/* body { font-family: 'Poppins', sans-serif; } */
 
-/* --- Modal Backdrop & Positioning --- */
+/* --- Modal Backdrop & Positioning (Popup Style) --- */
 .modal {
     display: none; /* Hidden by default - Controlled by JS */
     position: fixed;
@@ -21,62 +19,53 @@ body {
     top: 0;
     width: 100%;
     height: 100%;
-    overflow: hidden; /* Prevent scroll on body when modal is open */
-    /* Background Image - *** REPLACE WITH YOUR IMAGE PATH *** */
-    background: url('/assets/night_city.png') no-repeat center center fixed;
-    background-size: cover;
-    /* Add a subtle dark overlay for better text contrast */
-    background-color: rgba(0, 0, 0, 0.5);
-    background-blend-mode: overlay;
+    overflow: auto; /* Enable scroll if modal content gets too tall */
+    background-color: rgba(0, 0, 0, 0.7); /* Dark semi-transparent backdrop */
 
-    display: flex; /* Use Flexbox to center modal content */
-    align-items: center;
-    justify-content: center;
-
-    /* Smooth Fade-in */
+    /* Subtle Fade-in for the backdrop */
     opacity: 0;
-    transition: opacity 0.4s ease-in-out;
+    transition: opacity 0.3s ease-in-out;
 }
 
-/* Style to apply when modal is made visible by JS */
-/* JS currently uses display: block; If we want fade, JS needs to toggle a class */
-/* Let's assume JS adds an 'is-visible' class to .modal */
-.modal.is-visible { /* Or target #authModal[style*="block"] if needed */
-   display: flex; /* Keep flex for centering */
+/* Style applied by JS (e.g., when display becomes 'block') */
+#authModal[style*="block"] { /* Target based on inline style if needed */
    opacity: 1;
 }
 
-/* --- Modal Content - Glassmorphism --- */
+
+/* --- Modal Content - Glassmorphism CARD --- */
 .modal-content {
-    position: relative;
-    background: rgba(20, 20, 20, 0.7); /* Dark semi-transparent background */
-    backdrop-filter: blur(15px) saturate(120%); /* The Glass Effect */
-    -webkit-backdrop-filter: blur(15px) saturate(120%); /* Safari */
-    padding: 40px 50px; /* More padding */
+    position: relative; /* Needed for close button positioning */
+    margin: 8% auto; /* Vertical margin from top, centered horizontally */
+    background: rgba(25, 25, 25, 0.75); /* Darker semi-transparent background */
+    backdrop-filter: blur(18px) saturate(140%); /* The Glass Effect */
+    -webkit-backdrop-filter: blur(18px) saturate(140%); /* Safari */
+    padding: 40px 50px;
     border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.1); /* Subtle border */
-    width: 90%;
-    max-width: 420px; /* Max width */
-    color: #e0e0e0; /* Light text color */
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    width: 90%; /* Responsive width */
+    max-width: 480px; /* Max width for a "large-medium" card */
+    color: #e0e0e0;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
     text-align: center;
-    overflow: hidden; /* Clip content if needed */
+    overflow: hidden; /* Prevent content bleed */
 
-    /* Animation on load (optional) */
-    transform: scale(0.95);
+    /* Animation for the card appearing (optional scale/fade) */
+    transform: scale(0.98);
     opacity: 0;
-    animation: modalAppear 0.4s 0.1s ease-out forwards;
+    /* Make animation conditional on modal becoming visible */
+    /* This requires JS adding a class, or targetting #authModal[style*="block"] .modal-content */
+    transition: transform 0.3s ease-out, opacity 0.3s ease-out;
 }
 
-@keyframes modalAppear {
-    to {
-        transform: scale(1);
-        opacity: 1;
-    }
+/* Style applied when modal is visible */
+#authModal[style*="block"] .modal-content {
+     transform: scale(1);
+     opacity: 1;
 }
 
 
-/* --- Close Button --- */
+/* --- Close Button --- (Keep as is) */
 .close-button {
     position: absolute;
     top: 15px;
@@ -88,291 +77,146 @@ body {
     border: none;
     cursor: pointer;
     transition: color 0.3s ease, transform 0.3s ease;
-    line-height: 1; /* Ensure consistent vertical alignment */
-    padding: 5px; /* Easier click target */
+    line-height: 1;
+    padding: 5px;
 }
-
 .close-button:hover {
     color: #fff;
     transform: scale(1.1);
 }
 
-/* --- Logo --- */
-.logo-container {
-    margin-bottom: 30px;
-}
-
+/* --- Logo --- (Keep as is) */
+.logo-container { margin-bottom: 30px; }
 .logo-text {
-    font-size: 36px;
-    font-weight: 700;
-    color: #E50914; /* Bingflix Red/Orange */
-    letter-spacing: 1px;
-    text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.5);
+    font-size: 36px; font-weight: 700; color: #E50914;
+    letter-spacing: 1px; text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.5);
 }
 
-/* --- Tabs --- */
+/* --- Tabs --- (Keep as is) */
 .tabs-container {
-    display: flex;
-    margin-bottom: 30px;
+    display: flex; margin-bottom: 30px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
-
 .tab-button {
-    flex: 1; /* Make tabs share space equally */
-    background: none;
-    border: none;
-    color: rgba(255, 255, 255, 0.6);
-    padding: 15px 10px;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: 500;
+    flex: 1; background: none; border: none; color: rgba(255, 255, 255, 0.6);
+    padding: 15px 10px; cursor: pointer; font-size: 16px; font-weight: 500;
     transition: color 0.3s ease, border-bottom-color 0.3s ease;
-    border-bottom: 3px solid transparent; /* Placeholder for active border */
-    margin-bottom: -1px; /* Overlap container border */
+    border-bottom: 3px solid transparent; margin-bottom: -1px;
 }
+.tab-button:hover { color: #fff; }
+.tab-button.active { color: #fff; border-bottom-color: #E50914; }
 
-.tab-button:hover {
-    color: #fff;
-}
-
-.tab-button.active {
-    color: #fff;
-    border-bottom-color: #E50914; /* Highlight active tab */
-}
-
-/* --- Form Wrapper & Form Transitions --- */
+/* --- Form Wrapper & Form Transitions --- (Keep as is) */
 .form-wrapper {
-    position: relative; /* Needed if forms use absolute positioning for transitions */
-    overflow: hidden; /* Hide forms that are transitioning out */
-    min-height: 250px; /* Adjust based on your form height to prevent collapse */
+    position: relative; overflow: hidden;
+    min-height: 250px; /* Adjust based on form height */
 }
-
 .auth-form {
-    display: flex;
-    flex-direction: column;
-    gap: 20px; /* Space between form elements */
+    display: flex; flex-direction: column; gap: 20px;
     transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
-    opacity: 0;
-    position: absolute; /* Position forms on top of each other */
-    width: 100%;
-    left: 0;
-    top: 0;
-    transform: translateY(10px); /* Start slightly down */
-    pointer-events: none; /* Prevent interaction when hidden */
+    opacity: 0; position: absolute; width: 100%; left: 0; top: 0;
+    transform: translateY(10px); pointer-events: none;
 }
-
 .auth-form.active-form {
-    opacity: 1;
-    transform: translateY(0);
-    position: relative; /* Take up space when active */
-    pointer-events: auto; /* Allow interaction when active */
+    opacity: 1; transform: translateY(0);
+    position: relative; pointer-events: auto;
 }
 
-
-/* --- Input Fields --- */
-.input-group {
-    position: relative;
-}
-
+/* --- Input Fields --- (Keep as is) */
+.input-group { position: relative; }
 .input-icon {
-    position: absolute;
-    left: 15px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: rgba(255, 255, 255, 0.5);
-    font-size: 20px;
-    pointer-events: none; /* Icon shouldn't block input click */
+    position: absolute; left: 15px; top: 50%; transform: translateY(-50%);
+    color: rgba(255, 255, 255, 0.5); font-size: 20px; pointer-events: none;
     transition: color 0.3s ease;
 }
-
 .input-group input {
-    width: 100%;
-    padding: 14px 14px 14px 50px; /* Left padding for icon */
-    background-color: rgba(51, 51, 51, 0.7); /* Darker input background */
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    color: #fff;
-    font-size: 15px;
+    width: 100%; padding: 14px 14px 14px 50px;
+    background-color: rgba(51, 51, 51, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px;
+    color: #fff; font-size: 15px;
     transition: border-color 0.3s ease, background-color 0.3s ease;
 }
-
-.input-group input::placeholder {
-    color: rgba(255, 255, 255, 0.5);
-}
-
+.input-group input::placeholder { color: rgba(255, 255, 255, 0.5); }
 .input-group input:focus {
-    outline: none;
-    border-color: #E50914;
+    outline: none; border-color: #E50914;
     background-color: rgba(60, 60, 60, 0.7);
 }
+.input-group:focus-within .input-icon { color: #E50914; }
 
-.input-group input:focus + .input-icon { /* Style icon on input focus (requires icon *after* input in HTML or use :focus-within on parent) */
-   /* color: #E50914; This doesn't work with current HTML, needs :focus-within */
-}
-
-/* Using :focus-within on the parent is better */
-.input-group:focus-within .input-icon {
-     color: #E50914;
-}
-
-
-/* --- Submit Button --- */
+/* --- Submit Button --- (Keep as is) */
 .submit-button {
-    background: #E50914;
-    color: white;
-    padding: 14px 20px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: 600;
-    margin-top: 10px; /* Space above button */
+    background: #E50914; color: white; padding: 14px 20px; border: none;
+    border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600;
+    margin-top: 10px;
     transition: background-color 0.3s ease, transform 0.2s ease;
 }
+.submit-button:hover { background-color: #f40612; transform: translateY(-2px); }
+.submit-button:active { transform: translateY(0); }
 
-.submit-button:hover {
-    background-color: #f40612; /* Slightly brighter red */
-    transform: translateY(-2px);
-}
-
-.submit-button:active {
-     transform: translateY(0);
-}
-
-/* --- Error Message --- */
+/* --- Error Message --- (Keep as is) */
 .error-message {
-    color: #ff8080; /* Softer red for errors */
-    text-align: center;
-    margin-top: 0; /* Use gap in form for spacing */
-    margin-bottom: 5px; /* Small space below */
-    font-size: 14px;
-    min-height: 1.5em; /* Prevent layout shifts */
-    font-weight: 500;
+    color: #ff8080; text-align: center; margin-top: 0; margin-bottom: 5px;
+    font-size: 14px; min-height: 1.5em; font-weight: 500;
 }
 
-/* --- Forgot Password Link --- */
+/* --- Forgot Password Link --- (Keep as is) */
 .forgot-password {
-    display: block; /* Make it take its own line */
-    margin-top: -5px; /* Pull slightly closer to button */
-    margin-bottom: 15px; /* Space before divider */
-    text-align: right;
-    font-size: 13px;
-    color: rgba(255, 255, 255, 0.6);
-    text-decoration: none;
-    transition: color 0.3s ease;
+    display: block; margin-top: -5px; margin-bottom: 15px;
+    text-align: right; font-size: 13px; color: rgba(255, 255, 255, 0.6);
+    text-decoration: none; transition: color 0.3s ease;
 }
+.forgot-password:hover { color: #fff; text-decoration: underline; }
 
-.forgot-password:hover {
-    color: #fff;
-    text-decoration: underline;
-}
-
-/* --- Social Login Divider --- */
+/* --- Social Login Divider --- (Keep as is) */
 .social-divider {
-    display: flex;
-    align-items: center;
-    text-align: center;
-    color: rgba(255, 255, 255, 0.4);
-    margin: 25px 0;
-    font-size: 13px;
-    font-weight: 500;
+    display: flex; align-items: center; text-align: center;
+    color: rgba(255, 255, 255, 0.4); margin: 25px 0;
+    font-size: 13px; font-weight: 500;
 }
-
-.social-divider::before,
-.social-divider::after {
-    content: '';
-    flex: 1;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+.social-divider::before, .social-divider::after {
+    content: ''; flex: 1; border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
+.social-divider span { padding: 0 15px; }
 
-.social-divider span {
-    padding: 0 15px;
-}
-
-/* --- Social Login Buttons --- */
-.social-login {
-    display: flex;
-    flex-direction: column; /* Stack buttons */
-    gap: 15px;
-}
-
+/* --- Social Login Buttons --- (Keep as is) */
+.social-login { display: flex; flex-direction: column; gap: 15px; }
 .social-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    padding: 12px 20px;
-    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    padding: 12px 20px; border-radius: 8px;
     border: 1px solid rgba(255, 255, 255, 0.2);
     background-color: rgba(255, 255, 255, 0.05);
-    color: #fff;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
+    color: #fff; font-size: 14px; font-weight: 500; cursor: pointer;
     transition: background-color 0.3s ease, border-color 0.3s ease;
 }
-
-.social-button i {
-    font-size: 20px;
-}
-
+.social-button i { font-size: 20px; }
 .social-button:hover {
     background-color: rgba(255, 255, 255, 0.1);
     border-color: rgba(255, 255, 255, 0.3);
 }
-
-/* Optional: Specific social button colors on hover */
 .social-button.google:hover { border-color: #4285F4; }
 .social-button.github:hover { border-color: #ffffff; }
 
-
-/* --- Responsive Adjustments --- */
+/* --- Responsive Adjustments --- (Keep as is, may need minor tweaks) */
 @media (max-width: 600px) {
     .modal-content {
         width: 95%;
         padding: 30px 25px;
-        margin-top: 5%; /* Adjust margin for smaller screens */
-         max-width: none; /* Allow it to take more width */
+        margin-top: 15%; /* Adjust margin for smaller screens */
+        max-width: none;
     }
-
-    .logo-text {
-        font-size: 30px;
-    }
-
-    .tab-button {
-        font-size: 14px;
-        padding: 12px 8px;
-    }
-
-    .input-group input {
-        font-size: 14px;
-        padding: 12px 12px 12px 45px; /* Adjust padding */
-    }
-    .input-icon {
-        font-size: 18px;
-        left: 12px;
-    }
-
-     .submit-button {
-        font-size: 15px;
-        padding: 12px 15px;
-    }
-     .social-button {
-         font-size: 13px;
-         padding: 10px 15px;
-     }
-      .forgot-password {
-        font-size: 12px;
-    }
+    /* Other responsive styles from previous version remain relevant */
+    .logo-text { font-size: 30px; }
+    .tab-button { font-size: 14px; padding: 12px 8px; }
+    .input-group input { font-size: 14px; padding: 12px 12px 12px 45px; }
+    .input-icon { font-size: 18px; left: 12px; }
+    .submit-button { font-size: 15px; padding: 12px 15px; }
+    .social-button { font-size: 13px; padding: 10px 15px; }
+    .forgot-password { font-size: 12px; }
 }
 
-@media (max-height: 650px) { /* Adjust modal padding for short screens */
+@media (max-height: 700px) { /* Adjust vertical margin for shorter screens */
      .modal-content {
-          padding: 30px 40px;
+          margin-top: 5%;
+          margin-bottom: 5%;
      }
-     .logo-container { margin-bottom: 20px; }
-     .tabs-container { margin-bottom: 20px; }
-     .auth-form { gap: 15px; }
-      .form-wrapper { min-height: 220px; }
-      .social-divider { margin: 20px 0; }
 }
