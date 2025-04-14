@@ -12,23 +12,29 @@
 </div>
 
 ## Original Source
-📝 Note
-This project was originally created and designed by my incredibly talented friend, Abhilash Sarangi. I was fortunate to contribute a small part to this amazing initiative, and I’m truly grateful for the opportunity. All major credits go to him for bringing this brilliant concept to life.
+> 📝 **Note**  
+> This project was originally created and designed by my incredibly talented friend, [**Abhilash Sarangi**](https://github.com/dev1abhi).  
+> I was fortunate to contribute a small part to this amazing initiative, and I’m truly grateful for the opportunity.  
+> All major credits go to him for bringing this brilliant concept to life.  
+>
+> ✨ **Check out the original project here**: ([BingeFlix](https://github.com/dev1abhi/Bingflix-Website))  
+>
+> **P.S.** If you love this project, don’t forget to ⭐ the repository—it motivates my friend to keep building and innovating! 🙌
 
-✨ Check out the original project here: BingeFlix
+---
 
-P.S. If you love this project, don’t forget to ⭐ the repository—it motivates my friend to keep building and innovating! 🙌
+## 🤝 My Contributions
 
-🤝 My Contributions
 While the core idea and design belong to my friend, I had the privilege of collaborating and adding some technical enhancements:
 
-🔐 Authentication System – Implemented a secure user sign-up and login flow.
-☁️ Cloud Integration – Utilized GCP for Cloud Run (Serverless) and Cloud Registry (Docker Container).
-🧠 Machine Learning Recommender System – Built and integrated a personalized movie recommendation engine.
-💾 Database Management – Used MongoDB Atlas to structure and manage user data & movie preferences in the cloud.
-🛰️ Node Application – Developed backend logic for fetching/storing data in DB, deployed on Vercel (Serverless).
+- 🔐 **Authentication System** – Implemented a secure user sign-up and login flow.  
+- ☁️ **Cloud Integration** – Utilized GCP for Cloud Run (Serverless) and Cloud Registry (Docker Container).  
+- 🧠 **Machine Learning Recommender System** – Built and integrated a personalized movie recommendation engine.  
+- 💾 **Database Management** – Used MongoDB Atlas to structure and manage user data & movie preferences in the cloud.  
+- 🛰️ **Node Application** – Developed backend logic for fetching/storing data in DB, deployed on Vercel (Serverless).  
 
 A heartfelt thank you to my friend for letting me be part of this journey. It was an absolute pleasure contributing to such a cool and cinematic project!
+
 
 ## 🎬 Project Overview
 
