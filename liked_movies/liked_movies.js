@@ -1,12 +1,12 @@
-// liked_movies_new.js - Displays Recommendations, Liked Movies, Liked Series (all from Backend) with new UI
+// liked_movies_v3.js - Based on original working script, adapted for 3 sections, new UI, and backend likes.
 
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('[LikedContent] DOM Content Loaded');
+    console.log('[LikedContent V3] DOM Content Loaded');
 
     // --- Configuration ---
     const API_BASE_URL = '/api'; // Your backend API base
     const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w780'; // Higher res for background
-    const TMDB_API_KEY = 'd37c49fbb30e8f5eb1000b388ab5bf71'; // Your TMDB Key
+    const TMDB_API_KEY = 'd37c49fbb30e8f5eb1000b388ab5bf71'; // Your TMDB Key (Ensure this is correct!)
 
     // --- DOM Elements ---
     const recommendationsContainer = document.getElementById('recommendationsContainer');
@@ -17,208 +17,212 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- Authentication ---
     const token = localStorage.getItem('authToken');
     if (!token) {
-        console.log('[LikedContent] No auth token found. Redirecting to login.');
-        // Optionally display a message before redirecting
-        if (recommendationsContainer) recommendationsContainer.innerHTML = '<p class="empty-message">Please log in to see your content.</p>';
-        if (likedMoviesContainer) likedMoviesContainer.innerHTML = '<p class="empty-message">Please log in to see your content.</p>';
-        if (likedSeriesContainer) likedSeriesContainer.innerHTML = '<p class="empty-message">Please log in to see your content.</p>';
+        console.log('[LikedContent V3] No auth token found.');
+        displayAuthMessage(recommendationsContainer, 'Log in for recommendations.');
+        displayAuthMessage(likedMoviesContainer, 'Log in to see liked movies.');
+        displayAuthMessage(likedSeriesContainer, 'Log in to see liked series.');
         document.title = "Log in to View";
-        // Redirect after a short delay
-        // setTimeout(() => { window.location.href = '../auth/login.html'; }, 1500);
+        // Optional: Redirect to login
+        // window.location.href = '../auth/login.html';
         return; // Stop execution if not logged in
     }
-    console.log('[LikedContent] Auth token found.');
+    console.log('[LikedContent V3] Auth token found.');
 
     // --- Dynamic Title Update ---
     document.title = "Your Bingeflix Content";
 
     // --- Initial Setup ---
-    setupSidebar(); // Handle sidebar interactions
-    setupLogout(); // Handle logout button
+    setupSidebar(); // Handle sidebar interactions (from original)
+    setupLogout(); // Handle logout button (from original)
+    setupSearch(); // Handle search input (from original)
 
     // --- Load Data ---
-    loadAllContent(token);
+    console.log('[LikedContent V3] Initiating data fetch sequence...');
+    displayLoadingMessage(recommendationsContainer, 'Loading recommendations...');
+    displayLoadingMessage(likedMoviesContainer, 'Loading liked movies...');
+    displayLoadingMessage(likedSeriesContainer, 'Loading liked series...');
+
+    fetchAndDisplayRecommendations(token, recommendationsContainer);
+    fetchAndDisplayLikedItems(token, likedMoviesContainer, likedSeriesContainer);
 
 }); // End DOMContentLoaded
 
+
 // ================================================
-//      LOAD ALL CONTENT (Entry Point)
+//      FETCH & DISPLAY RECOMMENDATIONS (Adapted from Original)
 // ================================================
-async function loadAllContent(token) {
-    console.log('[LikedContent] Starting data fetch for all sections...');
-
-    // Show initial loading states
-    displayLoadingMessage(document.getElementById('recommendationsContainer'), "Loading recommendations...");
-    displayLoadingMessage(document.getElementById('likedMoviesContainer'), "Loading liked movies...");
-    displayLoadingMessage(document.getElementById('likedSeriesContainer'), "Loading liked series...");
-
-    try {
-        // Fetch recommendations and liked IDs concurrently
-        const [recsResponse, likesResponse] = await Promise.all([
-            fetch(`${API_BASE_URL}/user/recommendations`, { // Use constant
-                headers: { 'Authorization': `Bearer ${token}` }
-            }),
-            fetch(`${API_BASE_URL}/user/likes`, { // Use constant
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-        ]);
-
-        // Process Recommendations
-        await processRecommendations(recsResponse, document.getElementById('recommendationsContainer'));
-
-        // Process Liked Items
-        await processLikedItems(likesResponse, document.getElementById('likedMoviesContainer'), document.getElementById('likedSeriesContainer'));
-
-    } catch (error) {
-        console.error('[LikedContent] CRITICAL ERROR fetching initial data:', error);
-        // Display error in all sections as a fallback
-        displayErrorMessage(document.getElementById('recommendationsContainer'), 'Could not load content.');
-        displayErrorMessage(document.getElementById('likedMoviesContainer'), 'Could not load content.');
-        displayErrorMessage(document.getElementById('likedSeriesContainer'), 'Could not load content.');
+async function fetchAndDisplayRecommendations(token, container) {
+    if (!container) {
+        console.error('[LikedContent V3] Recommendations container not found!');
+        return;
     }
-}
-
-// ================================================
-//      PROCESS RECOMMENDATIONS
-// ================================================
-async function processRecommendations(response, container) {
-    if (!container) return;
-    console.log('[LikedContent] Processing recommendations response...');
+    console.log('[LikedContent V3] Starting recommendations fetch...');
 
     try {
+        const response = await fetch(`/api/user/recommendations`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        console.log('[LikedContent V3] Recommendations fetch response status:', response.status);
+
         if (!response.ok) {
             await handleFetchError(response, container, "recommendations");
             return;
         }
-        const data = await response.json();
-        console.log('[LikedContent] Recommendations data received:', data);
 
-        if (!data || !Array.isArray(data.recommendations) || data.recommendations.length === 0) {
-            displayEmptyMessage(container, "No movie recommendations yet. Like some movies!");
+        const data = await response.json();
+        console.log('[LikedContent V3] Recommendations data received:', data);
+
+        if (!data || !Array.isArray(data.recommendations)) {
+            console.error('[LikedContent V3] Invalid recommendations data format:', data);
+            displayErrorMessage(container, 'Unexpected data format for recommendations.');
+            return;
+        }
+
+        const recommendations = data.recommendations;
+        if (recommendations.length === 0) {
+            displayEmptyMessage(container, 'No movie recommendations yet. Like some movies!');
             return;
         }
 
         container.innerHTML = ''; // Clear loading message
-        data.recommendations.forEach(movieData => {
+        console.log(`[LikedContent V3] Rendering ${recommendations.length} recommendation cards...`);
+        recommendations.forEach(movieData => {
             if (movieData && movieData.id) {
-                const card = createContentCard(movieData, 'movie');
+                // *** USE THE NEW CARD CREATION FUNCTION ***
+                const card = createContentCard_NewUI(movieData, 'movie');
                 if (card) container.appendChild(card);
             } else {
-                console.warn("[LikedContent] Skipping invalid recommendation data:", movieData);
+                console.warn("[LikedContent V3] Skipping invalid recommendation data:", movieData);
             }
         });
-        console.log(`[LikedContent] Rendered ${data.recommendations.length} recommendation cards.`);
 
     } catch (error) {
-        console.error('[LikedContent] Error processing recommendations data:', error);
-        displayErrorMessage(container, 'Error displaying recommendations.');
+        console.error('[LikedContent V3] CRITICAL ERROR fetching recommendations:', error);
+        displayErrorMessage(container, 'Error loading recommendations. Check console.');
     }
 }
 
 // ================================================
-//      PROCESS LIKED ITEMS (Movies & Series)
+//      FETCH & DISPLAY LIKED ITEMS (Movies & Series - NEW LOGIC)
 // ================================================
-async function processLikedItems(response, movieContainer, seriesContainer) {
-    if (!movieContainer || !seriesContainer) return;
-    console.log('[LikedContent] Processing liked items response...');
+async function fetchAndDisplayLikedItems(token, movieContainer, seriesContainer) {
+    if (!movieContainer || !seriesContainer) {
+        console.error('[LikedContent V3] Liked items containers not found!');
+        return;
+    }
+    console.log('[LikedContent V3] Starting liked items fetch...');
 
     try {
+        const response = await fetch(`/api/user/likes`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        console.log('[LikedContent V3] Liked items fetch response status:', response.status);
+
         if (!response.ok) {
-            // Display error in both containers if the initial fetch fails
+            // Show error in both sections if the initial fetch fails
             await handleFetchError(response, movieContainer, "liked movies");
             await handleFetchError(response, seriesContainer, "liked series");
             return;
         }
+
         const data = await response.json();
-        console.log('[LikedContent] Liked items data received:', data);
+        console.log('[LikedContent V3] Liked items data received:', data);
 
         const likedMovieIds = data.likedMovies || [];
         const likedSeriesIds = data.likedSeries || [];
 
-        // Fetch details and render concurrently
-        await Promise.all([
-            fetchAndRenderLikedDetails(likedMovieIds, movieContainer, 'movie', 'liked movies'),
-            fetchAndRenderLikedDetails(likedSeriesIds, seriesContainer, 'tv', 'liked series')
-        ]);
+        // Process Movies
+        await processLikedDetailsByIds(likedMovieIds, movieContainer, 'movie', 'liked movies');
+
+        // Process Series
+        await processLikedDetailsByIds(likedSeriesIds, seriesContainer, 'tv', 'liked series');
 
     } catch (error) {
-        console.error('[LikedContent] Error processing liked items data:', error);
-        displayErrorMessage(movieContainer, 'Error displaying liked movies.');
-        displayErrorMessage(seriesContainer, 'Error displaying liked series.');
+        console.error('[LikedContent V3] CRITICAL ERROR fetching liked item IDs:', error);
+        displayErrorMessage(movieContainer, 'Error loading liked movies list.');
+        displayErrorMessage(seriesContainer, 'Error loading liked series list.');
     }
 }
 
 // ================================================
-//      FETCH & RENDER LIKED ITEM DETAILS
+//      HELPER: PROCESS LIKED DETAILS BY IDs (NEW LOGIC)
 // ================================================
-async function fetchAndRenderLikedDetails(ids, container, type, contentTypeLabel) {
-    if (!container) return;
-
+async function processLikedDetailsByIds(ids, container, type, contentTypeLabel) {
     const apiKey = 'd37c49fbb30e8f5eb1000b388ab5bf71'; // Ensure this is correct
-    if (!apiKey || apiKey === 'YOUR_TMDB_API_KEY') {
-       console.error(`[LikedContent] TMDB API Key is missing for fetching ${contentTypeLabel} details!`);
-       displayErrorMessage(container, `Cannot fetch ${contentTypeLabel} details (Config Error).`);
-       return;
-    }
 
     if (!Array.isArray(ids) || ids.length === 0) {
         displayEmptyMessage(container, `You haven't liked any ${contentTypeLabel} yet.`);
         return;
     }
 
-    console.log(`[LikedContent] Fetching details for ${ids.length} ${contentTypeLabel}...`);
-    container.innerHTML = ''; // Clear loading/previous message
+    console.log(`[LikedContent V3] Fetching details for ${ids.length} ${contentTypeLabel}...`);
+    // container.innerHTML = ''; // Clear loading message - Now done earlier
 
     const detailPromises = ids.map(id => {
-        const url = `https://api.themoviedb.org/3/${type}/${id}?api_key=${apiKey}&language=en-US`;
+        const url = `https://api.themoviedb.org/3/${type}/${id}?api_key=${apiKey}&language=en-US&append_to_response=videos`; // Append videos here
         return fetch(url)
             .then(res => {
                 if (!res.ok) {
-                    console.error(`[LikedContent] Error fetching ${type} details for ID ${id}: ${res.status}`);
+                    console.error(`[LikedContent V3] Error fetching ${type} details for ID ${id}: ${res.status}`);
                     return null; // Indicate failure for this specific item
                 }
                 return res.json();
             })
             .catch(err => {
-                console.error(`[LikedContent] Network error fetching ${type} details for ID ${id}:`, err);
+                console.error(`[LikedContent V3] Network error fetching ${type} details for ID ${id}:`, err);
                 return null;
             });
     });
 
     try {
         const results = await Promise.all(detailPromises);
+
+        container.innerHTML = ''; // Clear loading message *before* rendering
         let displayedCount = 0;
         results.forEach(itemData => {
             if (itemData && itemData.id) {
-                const card = createContentCard(itemData, type);
+                // *** USE THE NEW CARD CREATION FUNCTION ***
+                const card = createContentCard_NewUI(itemData, type);
                  if (card) {
                     container.appendChild(card);
                     displayedCount++;
                  }
             } else {
-                console.warn(`[LikedContent] Skipping null or invalid ${type} data.`);
+                console.warn(`[LikedContent V3] Skipping null or invalid ${type} data fetched from TMDB.`);
             }
         });
 
         if (displayedCount === 0 && ids.length > 0) {
-             displayErrorMessage(container, `Could not load details for ${contentTypeLabel}.`);
+             displayErrorMessage(container, `Could not load details for your ${contentTypeLabel}.`);
         } else if (displayedCount > 0) {
-            console.log(`[LikedContent] Rendered ${displayedCount} ${contentTypeLabel} cards.`);
+            console.log(`[LikedContent V3] Rendered ${displayedCount} ${contentTypeLabel} cards.`);
         }
-        // If displayedCount is 0 and ids.length was 0, the empty message is already shown.
+        // If displayedCount is 0 and ids.length was 0, the empty message is already handled.
 
     } catch (error) {
-        console.error(`[LikedContent] Error processing ${contentTypeLabel} details:`, error);
+        console.error(`[LikedContent V3] Error processing fetched ${contentTypeLabel} details:`, error);
         displayErrorMessage(container, `Error displaying ${contentTypeLabel}.`);
     }
 }
 
 
 // ================================================
-//      CREATE CONTENT CARD (New UI)
+//      CREATE CONTENT CARD (New UI - Adapted from previous attempt)
 // ================================================
-function createContentCard(itemData, type) {
+function createContentCard_NewUI(itemData, type) {
     if (!itemData || !itemData.id) return null;
+
+    const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w780';
 
     const card = document.createElement('div');
     card.classList.add('card');
@@ -228,280 +232,308 @@ function createContentCard(itemData, type) {
     const title = type === 'movie' ? itemData.title : itemData.name;
     const releaseDate = type === 'movie' ? itemData.release_date : itemData.first_air_date;
     const overview = itemData.overview || 'No overview available.';
-    const tagline = itemData.tagline || ''; // May be empty
+    const tagline = itemData.tagline || '';
 
+    // --- Background Image ---
     const posterPath = itemData.poster_path ? `${TMDB_IMAGE_BASE_URL}${itemData.poster_path}` : null;
     if (posterPath) {
         card.style.backgroundImage = `url(${posterPath})`;
     } else {
-        card.style.backgroundColor = '#333'; // Fallback background
-         // Add placeholder text if no image
-         card.innerHTML = `<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #888; text-align: center; padding: 10px;">${title}<br>(No Image)</div>`;
+        card.style.backgroundColor = '#333';
+        // Add placeholder text if no image - create a separate div for this
+        const placeholder = document.createElement('div');
+        placeholder.style.cssText = "display: flex; align-items: center; justify-content: center; height: 100%; color: #888; text-align: center; padding: 10px; position: absolute; width: 100%;";
+        placeholder.innerHTML = `${title || 'Item'}<br>(No Image)`;
+        card.appendChild(placeholder);
     }
 
-    // Format Date (Optional, but nice)
+    // --- Format Date ---
     let formattedDate = '';
     if (releaseDate) {
         try {
             formattedDate = new Date(releaseDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-        } catch (e) {
-            formattedDate = releaseDate; // Fallback to raw date string
+        } catch (e) { formattedDate = releaseDate; }
+    }
+
+    // --- Get Trailer URL (from appended 'videos' data if available) ---
+    let trailerUrl = null;
+    const videos = itemData.videos?.results;
+    if (videos) {
+        const trailer = videos.find(video =>
+            video.site === 'YouTube' &&
+            (video.type === 'Trailer' || video.type === 'Teaser') &&
+            video.official === true
+        ) || videos.find(video => video.site === 'YouTube' && (video.type === 'Trailer' || video.type === 'Teaser'));
+
+        if (trailer?.key) {
+             trailerUrl = `https://www.youtube.com/embed/${trailer.key}?autoplay=1&mute=1&enablejsapi=1&modestbranding=1&showinfo=0&controls=1&origin=${window.location.origin}`;
+             console.log(`[LikedContent V3] Found trailer for ${type} ${itemData.id}: ${trailer.key}`);
         }
     }
 
-    // Build Inner HTML using template literals for clarity
-    card.innerHTML = `
-        ${posterPath ? '' : `<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #888; text-align: center; padding: 10px;">${title}<br>(No Image)</div>` }
+    // --- Build Inner HTML ---
+    const innerHTML = `
         ${formattedDate ? `<div class="date">${formattedDate}</div>` : ''}
         <div class="content">
             <div class="title">${title || 'Title Unavailable'}</div>
             ${tagline ? `<div class="tagline">${tagline}</div>` : ''}
         </div>
         <div class="sinopse">
-            <!-- Iframe will be populated on hover -->
-            <iframe style="width: 100%; height: 50%; border: none;"
-                    id="trailer-${type}-${itemData.id}"
-                    type="text/html"
+            <iframe style="width: 100%; height: 50%; border: none; background-color: #000;"
+                    class="trailer-iframe"
+                    data-trailer-url="${trailerUrl || ''}"
                     src="about:blank"
                     allowfullscreen
-                    allow="autoplay"></iframe>
+                    allow="autoplay; encrypted-media"></iframe>
             <div class="content-sinopse">
                 <div class="text">${overview}</div>
             </div>
-            <div class="view">Details</div> <!-- Changed text -->
+            <div class="view">Details</div>
         </div>
     `;
+    // Use innerHTML carefully, consider creating elements if complex interactions needed later
+    card.insertAdjacentHTML('beforeend', innerHTML);
 
-     // Add event listeners after innerHTML is set
-     addCardEventListeners(card, itemData.id, type);
-
+    // --- Add Event Listeners ---
+    addCardEventListeners_NewUI(card);
 
     return card;
 }
 
 // ================================================
-//      CARD EVENT LISTENERS (Hover & Click)
+//      CARD EVENT LISTENERS (New UI - Adapted from previous attempt)
 // ================================================
-function addCardEventListeners(card, itemId, itemType) {
-     const iframe = card.querySelector('iframe');
-     let trailerUrl = null; // Store fetched trailer URL
-     let isFetchingTrailer = false;
+function addCardEventListeners_NewUI(card) {
+    const iframe = card.querySelector('.trailer-iframe');
+    const sinopseOverlay = card.querySelector('.sinopse'); // Get the overlay div
 
-     card.addEventListener('mouseenter', async () => {
-         if (!iframe) return;
-         // Only fetch trailer URL once per card instance
-         if (!trailerUrl && !isFetchingTrailer) {
-             isFetchingTrailer = true;
-             trailerUrl = await getYouTubeTrailerUrl(itemId, itemType); // Fetch URL
-              isFetchingTrailer = false; // Reset flag
-              console.log(`[LikedContent] Trailer URL for ${itemType} ${itemId}: ${trailerUrl}`);
-         }
-
-         // Set iframe src only if a valid URL was found
-         if (trailerUrl) {
-             iframe.src = trailerUrl;
-         } else {
-            // Optional: Display a message in the iframe space if no trailer
-             iframe.src = "about:blank";
-             try {
-                 iframe.contentWindow.document.body.innerHTML = '<div style="color: #ccc; font-size: 12px; text-align: center; padding-top: 20%;">Trailer not available</div>';
-             } catch (e) { console.warn("Could not write to iframe"); }
-         }
-     });
-
-     card.addEventListener('mouseleave', () => {
-          if (!iframe) return;
-         // Clear the iframe src to stop playback
-         iframe.src = 'about:blank';
-     });
-
-      // Click listener for the 'Details' button (or the whole card)
-     const viewButton = card.querySelector('.view');
-     if (viewButton) {
-         viewButton.addEventListener('click', (event) => {
-             event.stopPropagation(); // Prevent card click if button is clicked
-             navigateToDetails(itemType, itemId);
-         });
-     }
-      // Optional: Make the whole card clickable as a fallback
-      card.addEventListener('click', () => {
-           navigateToDetails(itemType, itemId);
-      });
-}
-
-// ================================================
-//      HELPER FUNCTIONS
-// ================================================
-
-// --- Navigate to Details Page ---
-function navigateToDetails(itemType, itemId) {
-     console.log(`[LikedContent] Navigating to details - Type: ${itemType}, ID: ${itemId}`);
-     let url = '';
-     if (itemType === 'movie') {
-         url = `../movie_details/movie_details.html?id=${itemId}`; // Path from liked_movies folder
-     } else if (itemType === 'tv') {
-         url = `../series_details/series_details.html?id=${itemId}`; // Path from liked_movies folder
-     } else {
-         console.error('[LikedContent] Unknown item type for navigation:', itemType);
-         return;
-     }
-     window.location.href = url;
-}
-
-
-// --- Fetch YouTube Trailer ---
-async function getYouTubeTrailerUrl(itemId, itemType) {
-    // Using the direct TMDB endpoint as an example, adapt if you use your backend proxy
-    const apiKey = 'd37c49fbb30e8f5eb1000b388ab5bf71';
-    const url = `https://api.themoviedb.org/3/${itemType}/${itemId}/videos?api_key=${apiKey}&language=en-US`;
-    try {
-        const response = await fetch(url);
-        if (!response.ok) {
-             console.error(`[LikedContent] Error fetching videos for ${itemType} ${itemId}: ${response.status}`);
-             return null;
-        }
-        const data = await response.json();
-        const trailer = data.results?.find(video =>
-            video.site === 'YouTube' &&
-            (video.type === 'Trailer' || video.type === 'Teaser') && // Accept Teasers too
-            video.official === true // Prefer official
-        ) || data.results?.find(video => video.site === 'YouTube' && (video.type === 'Trailer' || video.type === 'Teaser')); // Fallback to any trailer/teaser
-
-        if (trailer && trailer.key) {
-            // Added modestbranding=1&showinfo=0&controls=1
-            return `https://www.youtube.com/embed/${trailer.key}?autoplay=1&mute=1&enablejsapi=1&modestbranding=1&showinfo=0&controls=1&origin=${window.location.origin}`; // Added origin for JS API
-        } else {
-            return null; // No suitable trailer found
-        }
-    } catch (error) {
-        console.error(`[LikedContent] Network error fetching videos for ${itemType} ${itemId}:`, error);
-        return null;
+    if (!iframe || !sinopseOverlay) {
+        console.warn("[LikedContent V3] Card missing iframe or sinopse overlay for event listeners.");
+        return;
     }
+
+    const trailerUrl = iframe.dataset.trailerUrl; // Get URL from data attribute
+
+    card.addEventListener('mouseenter', () => {
+        if (trailerUrl && trailerUrl !== 'null' && trailerUrl !== '') {
+            iframe.src = trailerUrl;
+        } else {
+            // Optional: Show "No Trailer" message inside iframe area
+            iframe.src = "about:blank";
+            try {
+                // Small delay to ensure iframe is ready
+                setTimeout(() => {
+                    if (iframe.contentWindow && iframe.contentWindow.document) {
+                         iframe.contentWindow.document.body.innerHTML = '<div style="color: #aaa; font-size: 12px; text-align: center; padding-top: 25%; height: 100%; display: flex; align-items: flex-start; justify-content: center; background-color: #000;">Trailer not available</div>';
+                    }
+                }, 50);
+            } catch (e) { console.warn("[LikedContent V3] Could not write 'no trailer' message to iframe:", e); }
+        }
+        sinopseOverlay.style.opacity = '1'; // Ensure overlay is visible on hover
+    });
+
+    card.addEventListener('mouseleave', () => {
+        iframe.src = 'about:blank'; // Stop video playback
+        sinopseOverlay.style.opacity = '0'; // Hide overlay smoothly if CSS transition is set
+    });
+
+    // --- Click Listener ---
+    const viewButton = card.querySelector('.view');
+    const itemId = card.dataset.itemId;
+    const itemType = card.dataset.itemType;
+
+    const navigate = () => {
+        if (itemType && itemId) {
+            navigateToDetails(itemType, itemId);
+        } else {
+            console.error("[LikedContent V3] Missing item type or ID for navigation on card:", card);
+        }
+    };
+
+    if (viewButton) {
+        viewButton.addEventListener('click', (event) => {
+            event.stopPropagation(); // Prevent card click if button is clicked
+            navigate();
+        });
+    }
+    // Make the whole card clickable as well
+    card.addEventListener('click', (event) => {
+         // Only navigate if the click wasn't on the button itself
+         if (event.target !== viewButton) {
+            navigate();
+         }
+    });
 }
 
+
+// ================================================
+//      HELPER FUNCTIONS (Adapted from Original & Previous)
+// ================================================
+
+// --- Navigate to Details Page (Adapted from handlePosterClick) ---
+function navigateToDetails(itemType, itemId) {
+    console.log(`[LikedContent V3] Navigating to details - Type: ${itemType}, ID: ${itemId}`);
+    let url = '';
+    if (itemType === 'movie') {
+        url = `../movie_details/movie_details.html?id=${itemId}`; // Path from liked_movies folder
+    } else if (itemType === 'tv') {
+        url = `../series_details/series_details.html?id=${itemId}`; // Path from liked_movies folder
+    } else {
+        console.error('[LikedContent V3] Unknown item type for navigation:', itemType);
+        return;
+    }
+    window.location.href = url;
+}
 
 // --- Display Loading Message ---
 function displayLoadingMessage(container, message) {
     if (container) {
-        container.innerHTML = `<p class="loading-message">${message}</p>`;
+        // Simple text message, assuming CSS handles styling via .loading-message class if needed
+        container.innerHTML = `<p style="color: #ccc; text-align: center; padding: 40px 20px; font-style: italic;">${message}</p>`;
+    } else {
+        console.warn("[LikedContent V3] Attempted to display loading message in a null container.");
     }
 }
 
 // --- Display Empty Message ---
 function displayEmptyMessage(container, message) {
     if (container) {
-        container.innerHTML = `<p class="empty-message">${message}</p>`;
+        container.innerHTML = `<p style="color: #ccc; text-align: center; padding: 40px 20px; font-style: italic;">${message}</p>`;
+    } else {
+         console.warn("[LikedContent V3] Attempted to display empty message in a null container.");
     }
 }
 
 // --- Display Error Message ---
 function displayErrorMessage(container, message) {
      if (container) {
-        container.innerHTML = `<p class="empty-message" style="color: #ff8a8a;">${message}</p>`; // Use empty style, change color
+        container.innerHTML = `<p style="color: #ff8a8a; text-align: center; padding: 40px 20px; font-weight: bold;">${message}</p>`;
+    } else {
+         console.warn("[LikedContent V3] Attempted to display error message in a null container.");
     }
 }
 
-// --- Handle Fetch Errors ---
+// --- Display Auth Message (Special case for logged out) ---
+function displayAuthMessage(container, message) {
+     if (container) {
+        container.innerHTML = `<p style="color: #ffcc80; text-align: center; padding: 40px 20px;">${message}</p>`;
+    } else {
+        console.warn("[LikedContent V3] Attempted to display auth message in a null container.");
+    }
+}
+
+
+// --- Handle Fetch Errors (Adapted from Original) ---
 async function handleFetchError(response, container, type) {
    let errorMsg = `Could not load ${type}.`;
    try {
-        const errorData = await response.json(); // Try parsing JSON error from backend
-        console.error(`[LikedContent] Error fetching ${type}. Status: ${response.status}. Data:`, errorData);
+        // Try to get more specific error from response body
+        const errorData = await response.json().catch(() => null); // Gracefully handle non-JSON response
+        console.error(`[LikedContent V3] Error fetching ${type}. Status: ${response.status}. Data:`, errorData);
+
         if (response.status === 401 || response.status === 403) {
-           errorMsg = `Authentication error loading ${type}. Please log in again.`;
-           // Maybe trigger logout automatically?
-           // localStorage.removeItem('authToken');
-           // window.location.href = '../auth/login.html';
+           errorMsg = `Please log in again to see your ${type}.`;
+           // Consider auto-logout or clearer message
         } else if (errorData && errorData.message) {
-            errorMsg = `Could not load ${type}: ${errorData.message}`; // Use backend message if available
+            errorMsg = `Could not load ${type}: ${errorData.message}`;
         } else {
-             errorMsg = `Could not load ${type} (Error ${response.status}).`;
+             errorMsg = `Could not load ${type} (Server Error ${response.status}).`;
         }
-   } catch (e) { // Handle cases where error response is not JSON
-        const textError = await response.text();
-        console.error(`[LikedContent] Error fetching ${type}. Status: ${response.status}. Response: ${textError}`);
-        errorMsg = `Could not load ${type} (Error ${response.status}).`;
+   } catch (e) {
+        // Fallback if response parsing fails completely
+        console.error(`[LikedContent V3] Error fetching ${type}. Status: ${response.status}. Could not parse response body.`);
+        errorMsg = `Could not load ${type} (Network or Server Error ${response.status}).`;
    }
    displayErrorMessage(container, errorMsg);
     if (response.status >= 500) {
-       console.warn(`[LikedContent] Hint: Check Vercel Function logs for backend errors related to ${type}.`);
+       console.warn(`[LikedContent V3] Hint: Check Vercel Function logs for backend errors related to ${type}.`);
    }
 }
 
 
 // ================================================
-//      SIDEBAR & LOGOUT (Copied & Adapted)
+//      SIDEBAR & LOGOUT & SEARCH (Copied from Original - Check Paths!)
 // ================================================
 function setupSidebar() {
     let sidebar = document.querySelector(".sidebar");
     let closeBtn = document.querySelector("#btn");
-    let searchBtn = document.querySelector(".bx-search"); // Keep search functionality if needed
+    let searchBtn = document.querySelector(".bx-search");
     const mainContent = document.querySelector('.main-content');
 
+    if (!sidebar || !closeBtn || !mainContent) {
+        console.warn("[LikedContent V3] Sidebar elements not found for setup.");
+        return;
+    }
+
     const menuBtnChange = () => {
-        if (!sidebar || !closeBtn || !mainContent) return;
         const isOpen = sidebar.classList.contains("open");
+        const targetMargin = isOpen ? '250px' : '80px';
+        const targetWidth = isOpen ? 'calc(100% - 250px)' : 'calc(100% - 80px)';
+
+        if (window.innerWidth < 992) { // Force closed on smaller screens
+            sidebar.classList.remove("open");
+            closeBtn.classList.replace("bx-menu-alt-right", "bx-menu");
+            mainContent.style.marginLeft = '80px';
+            mainContent.style.width = 'calc(100% - 80px)';
+            return; // Don't proceed further
+        }
+
         if (isOpen) {
             closeBtn.classList.replace("bx-menu", "bx-menu-alt-right");
-            mainContent.style.marginLeft = '250px';
-             mainContent.style.width = 'calc(100% - 250px)';
         } else {
             closeBtn.classList.replace("bx-menu-alt-right", "bx-menu");
-             mainContent.style.marginLeft = '80px';
-              mainContent.style.width = 'calc(100% - 80px)';
         }
+        mainContent.style.marginLeft = targetMargin;
+        mainContent.style.width = targetWidth;
     };
 
-    if (closeBtn && sidebar) {
-        closeBtn.addEventListener("click", () => {
-            sidebar.classList.toggle("open");
-            menuBtnChange();
+    closeBtn.addEventListener("click", () => {
+        sidebar.classList.toggle("open");
+        menuBtnChange();
+    });
+
+    if (searchBtn) {
+        searchBtn.addEventListener("click", () => {
+           if (!sidebar.classList.contains("open")) {
+                sidebar.classList.add("open");
+                menuBtnChange();
+                document.getElementById('searchInput')?.focus();
+           }
         });
     }
 
-    // Optional: Search button toggles sidebar as well
-    if (searchBtn && sidebar) {
-         searchBtn.addEventListener("click", () => {
-            if (!sidebar.classList.contains("open")) { // Only open if closed
-                 sidebar.classList.add("open");
-                 menuBtnChange();
-                 // Focus the input?
-                 document.getElementById('searchInput')?.focus();
-            }
-         });
-    }
-
-     // Initial adjustment in case styles didn't apply correctly
-     setTimeout(menuBtnChange, 100); // Run shortly after load
-     // Also run on resize if you want it to adapt more dynamically
-     window.addEventListener('resize', () => {
-        // Basic check to close sidebar on smaller screens if it was open
-        if (window.innerWidth < 992 && sidebar && sidebar.classList.contains('open')) {
-            sidebar.classList.remove('open');
-            menuBtnChange();
-        }
-     });
+    // Initial check in case page loads with sidebar needing adjustment
+    menuBtnChange();
+    window.addEventListener('resize', menuBtnChange); // Adjust on resize
 }
 
-// --- Search Function (Keep standard behavior) ---
-function searchMovies() {
+// --- Search Function ---
+function setupSearch() {
     const searchInput = document.getElementById('searchInput');
-    if (!searchInput) return;
-    const query = searchInput.value.trim();
-    if (query.length === 0) return;
-    // Navigate to results page (ensure path is correct from liked_movies folder)
-    const url = `../results/results.html?query=${encodeURIComponent(query)}`;
-    window.location.href = url;
+    if (searchInput) {
+        searchInput.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                performSearch(searchInput.value);
+            }
+        });
+    }
+    // If you have a search icon that *triggers* the search (not just opens sidebar)
+    // const searchIcon = document.querySelector('.bx-search'); // Or a more specific selector
+    // if (searchIcon && searchInput) {
+    //     searchIcon.addEventListener('click', () => {
+    //         performSearch(searchInput.value);
+    //     });
+    // }
 }
-// Add Enter key listener for search
-const searchInput = document.getElementById('searchInput');
-if (searchInput) {
-    searchInput.addEventListener('keydown', function(event) {
-        if (event.key === 'Enter') {
-            event.preventDefault(); // Prevent form submission if it were in a form
-            searchMovies();
-        }
-    });
+
+function performSearch(query) {
+    const trimmedQuery = query.trim();
+    if (trimmedQuery.length === 0) return;
+    // *** IMPORTANT: Check this relative path is correct from '/liked_movies/' folder ***
+    const url = `../results/results.html?query=${encodeURIComponent(trimmedQuery)}`;
+    console.log(`[LikedContent V3] Navigating to search results: ${url}`);
+    window.location.href = url;
 }
 
 
@@ -511,14 +543,14 @@ function setupLogout() {
     if (logoutButton) {
         logoutButton.addEventListener('click', (e) => {
             e.preventDefault();
-            console.log('[LikedContent] Logging out...');
+            console.log('[LikedContent V3] Logging out...');
             localStorage.removeItem('authToken');
-            // Redirect to login page (ensure path is correct)
+            // *** IMPORTANT: Check this relative path is correct from '/liked_movies/' folder ***
             window.location.href = '../auth/login.html';
         });
     } else {
-        console.warn('[LikedContent] Logout button (#log_out) not found.');
+        console.warn('[LikedContent V3] Logout button (#log_out) not found.');
     }
 }
 
-console.log('[LikedContent] Script finished loading.');
+console.log('[LikedContent V3] Script finished loading.');

@@ -292,16 +292,35 @@ body {
   margin-bottom: 40px;
 }
 
+/* === Section Styling (Improved Headers) === */
+.content-section {
+  margin-bottom: 50px; /* Increased spacing between sections */
+}
+
 .content-section h2 {
-  color: #fff;
-  font-family: 'Poppins', sans-serif; /* Consistent font */
-  font-size: 24px; /* Adjust size */
-  font-weight: 600;
-  margin-bottom: 20px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #444;
-  text-align: left; /* Align left */
-  text-decoration: none; /* Remove underline from original */
+  color: #eee; /* Slightly softer white */
+  font-family: 'Poppins', sans-serif;
+  font-size: 26px;
+  font-weight: 500; /* Medium weight */
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #ff5722; /* Accent color border */
+  display: inline-block; /* Make border only as wide as text */
+  text-align: left;
+  text-decoration: none;
+  letter-spacing: 0.5px;
+  position: relative; /* For potential pseudo-elements later */
+}
+
+/* Optional: Add a subtle icon or effect */
+.content-section h2::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -2px; /* Align with the border */
+    width: 50px; /* Width of the accent line */
+    height: 2px;
+    background-color: #fff; /* White accent under the orange */
 }
 
 .loading-message,
