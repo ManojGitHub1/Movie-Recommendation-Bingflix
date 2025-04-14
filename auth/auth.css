@@ -1,4 +1,4 @@
-/* auth.css - Modern Popup Card Login Styling */
+/* auth.css - Modern Popup Card Login Styling (Wider & Background Image) */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
 * {
@@ -6,9 +6,6 @@
     padding: 0;
     box-sizing: border-box;
 }
-
-/* Apply font globally ONLY if this CSS is scoped or auth.html is standalone */
-/* body { font-family: 'Poppins', sans-serif; } */
 
 /* --- Modal Backdrop & Positioning (Popup Style) --- */
 .modal {
@@ -19,8 +16,23 @@
     top: 0;
     width: 100%;
     height: 100%;
-    overflow: auto; /* Enable scroll if modal content gets too tall */
-    background-color: rgba(0, 0, 0, 0.7); /* Dark semi-transparent backdrop */
+    overflow-y: auto; /* Allow backdrop scrolling if content overflows significantly */
+
+    /* *** YOUR BACKGROUND IMAGE *** */
+    /* Assuming auth.css is in /auth/ and assets is in /assets/ */
+    background: url('/assets/night_city.png') no-repeat center center fixed;
+    /* --- Make sure 'login-background.jpg' is the correct filename! --- */
+    background-size: cover;
+
+    /* Dark Overlay */
+    background-color: rgba(0, 0, 0, 0.65); /* Slightly darker overlay */
+    background-blend-mode: overlay;
+
+    /* Centering the modal-content */
+    display: flex; /* Use flex to help with centering */
+    align-items: center; /* Vertically center */
+    justify-content: center; /* Horizontally center */
+    padding: 20px; /* Add padding for smaller screens */
 
     /* Subtle Fade-in for the backdrop */
     opacity: 0;
@@ -28,34 +40,32 @@
 }
 
 /* Style applied by JS (e.g., when display becomes 'block') */
-#authModal[style*="block"] { /* Target based on inline style if needed */
+#authModal[style*="block"] {
    opacity: 1;
 }
 
 
-/* --- Modal Content - Glassmorphism CARD --- */
+/* --- Modal Content - Glassmorphism CARD (WIDER) --- */
 .modal-content {
-    position: relative; /* Needed for close button positioning */
-    margin: 8% auto; /* Vertical margin from top, centered horizontally */
-    background: rgba(25, 25, 25, 0.75); /* Darker semi-transparent background */
-    backdrop-filter: blur(18px) saturate(140%); /* The Glass Effect */
-    -webkit-backdrop-filter: blur(18px) saturate(140%); /* Safari */
-    padding: 40px 50px;
+    position: relative;
+    /* Removed margin: auto; positioning handled by flex parent */
+    background: rgba(25, 25, 25, 0.80); /* Slightly less transparent */
+    backdrop-filter: blur(15px) saturate(130%);
+    -webkit-backdrop-filter: blur(15px) saturate(130%);
+    padding: 40px 50px; /* Keep padding */
     border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    width: 90%; /* Responsive width */
-    max-width: 480px; /* Max width for a "large-medium" card */
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    width: 100%; /* Take available width within padding */
+    max-width: 650px; /* *** INCREASED MAX WIDTH *** */
     color: #e0e0e0;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 12px 45px rgba(0, 0, 0, 0.5); /* Stronger shadow */
     text-align: center;
-    overflow: hidden; /* Prevent content bleed */
+    overflow: hidden; /* Keep this */
 
-    /* Animation for the card appearing (optional scale/fade) */
+    /* Animation for the card appearing */
     transform: scale(0.98);
     opacity: 0;
-    /* Make animation conditional on modal becoming visible */
-    /* This requires JS adding a class, or targetting #authModal[style*="block"] .modal-content */
-    transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+    transition: transform 0.3s ease-out 0.05s, opacity 0.3s ease-out 0.05s; /* Added slight delay */
 }
 
 /* Style applied when modal is visible */
@@ -67,34 +77,23 @@
 
 /* --- Close Button --- (Keep as is) */
 .close-button {
-    position: absolute;
-    top: 15px;
-    right: 20px;
-    font-size: 28px;
-    font-weight: bold;
-    color: rgba(255, 255, 255, 0.6);
-    background: none;
-    border: none;
-    cursor: pointer;
-    transition: color 0.3s ease, transform 0.3s ease;
-    line-height: 1;
-    padding: 5px;
+    position: absolute; top: 15px; right: 20px; font-size: 28px;
+    font-weight: bold; color: rgba(255, 255, 255, 0.6); background: none;
+    border: none; cursor: pointer; transition: color 0.3s ease, transform 0.3s ease;
+    line-height: 1; padding: 5px;
 }
-.close-button:hover {
-    color: #fff;
-    transform: scale(1.1);
-}
+.close-button:hover { color: #fff; transform: scale(1.1); }
 
-/* --- Logo --- (Keep as is) */
-.logo-container { margin-bottom: 30px; }
+/* --- Logo --- (Slightly reduced margin) */
+.logo-container { margin-bottom: 25px; } /* Reduced margin */
 .logo-text {
     font-size: 36px; font-weight: 700; color: #E50914;
     letter-spacing: 1px; text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.5);
 }
 
-/* --- Tabs --- (Keep as is) */
+/* --- Tabs --- (Slightly reduced margin) */
 .tabs-container {
-    display: flex; margin-bottom: 30px;
+    display: flex; margin-bottom: 25px; /* Reduced margin */
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 .tab-button {
@@ -106,13 +105,15 @@
 .tab-button:hover { color: #fff; }
 .tab-button.active { color: #fff; border-bottom-color: #E50914; }
 
-/* --- Form Wrapper & Form Transitions --- (Keep as is) */
+/* --- Form Wrapper & Form Transitions --- */
 .form-wrapper {
     position: relative; overflow: hidden;
-    min-height: 250px; /* Adjust based on form height */
+    min-height: auto; /* Let content define height */
+    padding-bottom: 5px; /* Add slight padding at bottom */
 }
 .auth-form {
-    display: flex; flex-direction: column; gap: 20px;
+    display: flex; flex-direction: column;
+    gap: 18px; /* *** Slightly reduced gap *** */
     transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
     opacity: 0; position: absolute; width: 100%; left: 0; top: 0;
     transform: translateY(10px); pointer-events: none;
@@ -143,11 +144,11 @@
 }
 .input-group:focus-within .input-icon { color: #E50914; }
 
-/* --- Submit Button --- (Keep as is) */
+/* --- Submit Button --- */
 .submit-button {
     background: #E50914; color: white; padding: 14px 20px; border: none;
     border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600;
-    margin-top: 10px;
+    /* margin-top: 10px; Spacing now handled by parent gap */
     transition: background-color 0.3s ease, transform 0.2s ease;
 }
 .submit-button:hover { background-color: #f40612; transform: translateY(-2px); }
@@ -155,22 +156,25 @@
 
 /* --- Error Message --- (Keep as is) */
 .error-message {
-    color: #ff8080; text-align: center; margin-top: 0; margin-bottom: 5px;
+    color: #ff8080; text-align: center; margin-top: -5px; /* Pull up slightly */
+    margin-bottom: 0; /* Remove bottom margin */
     font-size: 14px; min-height: 1.5em; font-weight: 500;
 }
 
-/* --- Forgot Password Link --- (Keep as is) */
+/* --- Forgot Password Link --- */
 .forgot-password {
-    display: block; margin-top: -5px; margin-bottom: 15px;
+    display: block; margin-top: 0px; /* Spacing now handled by parent gap */
+    margin-bottom: 10px; /* Reduced space */
     text-align: right; font-size: 13px; color: rgba(255, 255, 255, 0.6);
     text-decoration: none; transition: color 0.3s ease;
 }
 .forgot-password:hover { color: #fff; text-decoration: underline; }
 
-/* --- Social Login Divider --- (Keep as is) */
+/* --- Social Login Divider --- */
 .social-divider {
     display: flex; align-items: center; text-align: center;
-    color: rgba(255, 255, 255, 0.4); margin: 25px 0;
+    color: rgba(255, 255, 255, 0.4);
+    margin: 20px 0; /* *** Reduced vertical margin *** */
     font-size: 13px; font-weight: 500;
 }
 .social-divider::before, .social-divider::after {
@@ -178,8 +182,11 @@
 }
 .social-divider span { padding: 0 15px; }
 
-/* --- Social Login Buttons --- (Keep as is) */
-.social-login { display: flex; flex-direction: column; gap: 15px; }
+/* --- Social Login Buttons --- */
+.social-login {
+    display: flex; flex-direction: column;
+    gap: 12px; /* *** Slightly reduced gap *** */
+}
 .social-button {
     display: flex; align-items: center; justify-content: center; gap: 10px;
     padding: 12px 20px; border-radius: 8px;
@@ -196,27 +203,42 @@
 .social-button.google:hover { border-color: #4285F4; }
 .social-button.github:hover { border-color: #ffffff; }
 
-/* --- Responsive Adjustments --- (Keep as is, may need minor tweaks) */
-@media (max-width: 600px) {
+/* --- Responsive Adjustments --- */
+@media (max-width: 768px) { /* Adjust breakpoint if needed */
     .modal-content {
-        width: 95%;
-        padding: 30px 25px;
-        margin-top: 15%; /* Adjust margin for smaller screens */
-        max-width: none;
+        max-width: 550px; /* Slightly smaller max-width on medium screens */
     }
-    /* Other responsive styles from previous version remain relevant */
-    .logo-text { font-size: 30px; }
-    .tab-button { font-size: 14px; padding: 12px 8px; }
-    .input-group input { font-size: 14px; padding: 12px 12px 12px 45px; }
-    .input-icon { font-size: 18px; left: 12px; }
-    .submit-button { font-size: 15px; padding: 12px 15px; }
-    .social-button { font-size: 13px; padding: 10px 15px; }
-    .forgot-password { font-size: 12px; }
 }
 
-@media (max-height: 700px) { /* Adjust vertical margin for shorter screens */
+@media (max-width: 600px) {
+    .modal-content {
+        width: 95%; /* Keep high width on small screens */
+        padding: 30px 25px;
+        max-width: none; /* Remove max-width limit */
+    }
+     .logo-text { font-size: 30px; }
+     .tab-button { font-size: 14px; padding: 12px 8px; }
+     .input-group input { font-size: 14px; padding: 12px 12px 12px 45px; }
+     .input-icon { font-size: 18px; left: 12px; }
+     .submit-button { font-size: 15px; padding: 12px 15px; }
+     .social-button { font-size: 13px; padding: 10px 15px; }
+     .forgot-password { font-size: 12px; }
+     .auth-form { gap: 15px; } /* Adjust gap for smaller screens */
+     .social-divider { margin: 15px 0; }
+     .social-login { gap: 10px; }
+}
+
+/* Optional: Adjustments for very short screens */
+@media (max-height: 650px) and (min-width: 601px) { /* Apply only if not already mobile */
+    .modal {
+         align-items: flex-start; /* Align card to top */
+         padding-top: 5vh; /* Add some space from top */
+         padding-bottom: 5vh;
+    }
      .modal-content {
-          margin-top: 5%;
-          margin-bottom: 5%;
+         /* margin-top: 0; */ /* Handled by parent padding/align-items */
+         /* margin-bottom: 0; */
      }
+     /* Maybe reduce vertical padding inside card slightly */
+     /* .modal-content { padding-top: 30px; padding-bottom: 30px; } */
 }
