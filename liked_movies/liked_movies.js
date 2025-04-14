@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // --- DOM Elements ---
   const moviesContainer = document.getElementById('moviesContainer');
-  const seriesContainer = document.getElementById('seriesContainer'); // Get the new container
+  const seriesContainer = document.getElementById('seriesContainer');
 
   if (!moviesContainer) {
       console.error('[LikedMovies] CRITICAL: Element with ID "moviesContainer" not found!');
@@ -118,7 +118,7 @@ async function fetchAndDisplayLikedSeries() {
   const container = document.getElementById('seriesContainer');
   if (!container) return; // Exit if container missing
 
-  const apiKey = 'YOUR_TMDB_API_KEY'; // <<< PUT KEY HERE AGAIN
+  const apiKey = 'd37c49fbb30e8f5eb1000b388ab5bf71';
   if (apiKey === 'YOUR_TMDB_API_KEY' || !apiKey) {
        console.error("TMDB API Key is missing for fetching series details!");
        container.innerHTML = '<p style="color: #ccc; text-align: center; padding: 20px;">Configuration error: Cannot fetch series details.</p>';
