@@ -19,7 +19,7 @@
     overflow-y: auto; /* Allow scroll if needed */
 
     /* Background Image */
-    background: url('../assets/login-background.jpg') no-repeat center center fixed;
+    background: url('/assets/night_city.png') no-repeat center center fixed;
     background-size: cover;
 
     /* Dark Overlay */
