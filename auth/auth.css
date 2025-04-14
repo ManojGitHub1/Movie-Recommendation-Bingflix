@@ -1,4 +1,4 @@
-/* auth.css - Simple Backdrop, Margin-Centered Glass Card */
+/* auth.css - Centered Glass Card, No Scrollbar */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
 * {
@@ -7,7 +7,7 @@
     box-sizing: border-box;
 }
 
-/* --- Modal Backdrop (Simplified) --- */
+/* --- Modal Backdrop (Simplified, No Scroll) --- */
 .modal {
     display: none; /* Hidden by default */
     position: fixed;
@@ -16,11 +16,10 @@
     top: 0;
     width: 100%;
     height: 100%;
-    overflow-y: auto; /* Enable scroll if content is taller than viewport */
-    background-color: rgba(0, 0, 0, 0.6); /* Optional: Dim background slightly */
-    /* Remove background image, flexbox, padding from here */
-    /* The backdrop can be slightly dimmed or fully transparent */
-    /* background-color: transparent; */ /* <-- Use this if you want NO dimming */
+    /* *** REMOVED overflow-y: auto; *** */
+    overflow: hidden; /* Hide anything that might overflow the viewport */
+    background-color: rgba(0, 0, 0, 0.65); /* Optional dimming */
+    /* background-color: transparent; */ /* Use if you want NO dimming */
 
     /* Optional fade for the backdrop */
     opacity: 0;
@@ -35,36 +34,35 @@
 
 /* --- Modal Content - Floating Glassmorphism CARD (Margin Centered) --- */
 .modal-content {
-    position: relative; /* Keep for absolute children */
+    position: relative;
 
-    /* *** CENTERING USING MARGIN *** */
-    margin: 8% auto; /* Adjust vertical % (8%) as needed, 'auto' handles horizontal */
-    /* This replaces the flexbox centering from the parent */
+    /* *** ADJUSTED Vertical Margin *** */
+    margin: 5% auto; /* Reduced top margin slightly, auto for horizontal */
+    /* Or try a fixed px value if % is problematic: margin: 60px auto; */
 
-    /* Background with high transparency */
-    background: rgba(20, 20, 20, 0.65); /* Adjust alpha (0.65) */
+    /* Keep the visual styles */
+    background: rgba(20, 20, 20, 0.65);
     backdrop-filter: blur(16px) saturate(120%);
     -webkit-backdrop-filter: blur(16px) saturate(120%);
     padding: 40px 50px;
     border-radius: 16px;
     border: 1px solid rgba(255, 255, 255, 0.1);
-    width: 90%; /* Responsive width */
-    max-width: 600px; /* Keep desired max-width */
+    width: 90%;
+    max-width: 600px;
     color: #e8e8e8;
     box-shadow: 0 10px 50px rgba(0, 0, 0, 0.45);
     text-align: center;
-    overflow: hidden; /* Keep content contained */
+    /* Removed overflow: hidden; from here unless content inside card needs clipping */
 
     /* Animation for the CARD appearing */
-    transform: translateY(20px); /* Start slightly lower */
+    transform: translateY(20px);
     opacity: 0;
-    /* Transition applied directly to the card */
     transition: transform 0.3s ease-out, opacity 0.3s ease-out;
 }
 
-/* Style applied when modal is visible - Transitions opacity/transform */
+/* Style applied when modal is visible */
 #authModal[style*="block"] .modal-content {
-     transform: translateY(0); /* Move up to final position */
+     transform: translateY(0);
      opacity: 1;
 }
 
@@ -193,11 +191,10 @@
 }
 @media (max-width: 600px) {
     .modal-content {
-         width: 90%; /* Keep slightly narrower than full width */
+         width: 90%;
          padding: 30px 25px;
-         margin: 10% auto; /* Adjust vertical margin */
+         margin: 10% auto; /* Keep adjusted mobile margin */
     }
-    /* Keep other mobile styles */
     .logo-text { font-size: 30px; }
     .tab-button { font-size: 14px; padding: 12px 8px; }
     .input-group input { font-size: 14px; padding: 12px 12px 12px 45px; }
@@ -209,5 +206,4 @@
     .social-divider { margin: 15px 0; }
     .social-login { gap: 10px; }
 }
-/* Remove short screen adjustment as margin handles vertical space */
-/* @media (max-height: 650px) and (min-width: 601px) { ... } */
+/* Short screen adjustment removed as overflow is handled differently */
