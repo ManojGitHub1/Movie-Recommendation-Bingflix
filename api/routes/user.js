@@ -9,10 +9,10 @@ const {
     addLike,
     getLikes,
     getRecommendations,
-    getUserProfile,
+    // getUserProfile,
     addSeriesLike,
-    removeMovieLike,
-    removeSeriesLike
+    // removeMovieLike,
+    // removeSeriesLike
 } = require('../controllers/userController'); // We'll create this controller file next
 
 // Define the routes
