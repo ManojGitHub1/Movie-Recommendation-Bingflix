@@ -12,7 +12,7 @@
     display: none; /* Hidden by default - Controlled by JS */
     position: fixed;
     z-index: 1000;
-    left: 0;
+    left: 100;
     top: 0;
     width: 100%;
     height: 100%;
@@ -41,7 +41,7 @@
 
 /* Style applied by JS (e.g., when display becomes 'block') */
 #authModal[style*="block"] {
-   opacity: 1;
+   opacity: 0;
 }
 
 
@@ -49,7 +49,7 @@
 .modal-content {
     position: relative;
     /* Removed margin: auto; positioning handled by flex parent */
-    background: rgba(25, 25, 25, 0.80); /* Slightly less transparent */
+    background: rgba(0, 0, 0, 0); /* Slightly less transparent */
     backdrop-filter: blur(15px) saturate(130%);
     -webkit-backdrop-filter: blur(15px) saturate(130%);
     padding: 40px 50px; /* Keep padding */
