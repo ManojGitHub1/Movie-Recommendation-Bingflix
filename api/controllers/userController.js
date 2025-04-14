@@ -259,7 +259,7 @@ exports.getRecommendations = async (req, res) => {
         }
 
         const movieDetailsPromises = movieIds.map(async (movieId) => {
-            const url = `https://api.themoviedb.org/3/movie/${movieId}?api_key=${apiKey}&language=en-US`;
+            const url = `https://api.themoviedb.org/3/movie/${movieId}?api_key=${apiKey}&language=en-US&append_to_response=videos`;
             try {
                 // console.log(`[API] Fetching details for movie ID: ${movieId}`); // Optional: verbose logging
                 const tmdbResponse = await fetch(url);
