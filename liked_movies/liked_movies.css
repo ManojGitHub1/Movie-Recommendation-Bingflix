@@ -298,24 +298,25 @@ body {
 }
 
 .page-header {
-  padding: 40px 0 30px 0; /* Spacing above/below */
-  margin-bottom: 40px; /* Space before first section */
-  border-bottom: 1px solid #2a2a2a; /* Subtle separator */
+  padding: 50px 0 40px 0; /* Slightly more top padding, less bottom */
+  margin-bottom: 50px;  /* Increased space before the first section */
+  border-bottom: none;  /* Remove the border */
   text-align: left;
 }
 
 .page-header h1 {
-  font-size: 36px;
+  font-size: 40px;        /* Slightly larger */
   font-weight: 600;
-  color: #fff;
-  margin-bottom: 8px;
-  letter-spacing: 1px;
+  color: #e0e0e0;        /* Slightly softer white */
+  margin-bottom: 12px;   /* More space below title */
+  letter-spacing: 1.2px; /* Slightly wider spacing */
 }
 
 .page-header p {
-  font-size: 16px;
-  color: #aaa;
+  font-size: 17px;        /* Slightly larger subtitle */
+  color: #888;           /* More muted grey */
   font-weight: 300;
+  line-height: 1.6;       /* Ensure good line spacing */
 }
 
 
