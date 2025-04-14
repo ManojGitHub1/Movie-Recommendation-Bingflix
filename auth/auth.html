@@ -2,51 +2,85 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Authentication</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Link to Boxicons for Icons -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <!-- Link to your CSS (ensure the path is correct) -->
+    <link rel="stylesheet" href="auth.css">
+    <title>Bingflix - Authentication</title>
 </head>
 <body>
+    <!-- The Modal Container -->
     <div id="authModal" class="modal">
+
+        <!-- Modal Content Area with Glass Effect -->
         <div class="modal-content">
-          <span class="close-button">×</span>
-          <div>
-              <button class="tab-button active" data-form="loginForm">Login</button>
-              <button class="tab-button" data-form="signupForm">Sign Up</button>
-          </div>
+            <span class="close-button">×</span>
 
-          <!-- Login Form -->
-          <form id="loginForm" style="display: block;">
-            <h2>Login</h2>
-            <div class="form-group">
-              <label for="loginEmail">Email:</label>
-              <input type="email" id="loginEmail" required>
+            <!-- Logo -->
+            <div class="logo-container">
+                <!-- Replace with your actual logo if you have one, or style text -->
+                <h1 class="logo-text">BingeFlix</h1>
             </div>
-            <div class="form-group">
-              <label for="loginPassword">Password:</label>
-              <input type="password" id="loginPassword" required>
-            </div>
-            <button type="submit">Login</button>
-            <p id="loginError" class="error-message"></p>
-          </form>
 
-          <!-- Signup Form -->
-          <form id="signupForm" style="display: none;">
-            <h2>Sign Up</h2>
-            <div class="form-group">
-              <label for="signupEmail">Email:</label>
-              <input type="email" id="signupEmail" required>
+            <!-- Tab Buttons Container -->
+            <div class="tabs-container">
+                <button class="tab-button active" data-form="loginForm">Login</button>
+                <button class="tab-button" data-form="signupForm">Sign Up</button>
             </div>
-            <div class="form-group">
-              <label for="signupPassword">Password (min 6 chars):</label>
-              <input type="password" id="signupPassword" required minlength="6">
+
+            <!-- Form Container (for smoother transitions) -->
+            <div class="form-wrapper">
+                <!-- Login Form -->
+                <form id="loginForm" class="auth-form active-form">
+                    <!-- No <h2> needed, tabs serve as title -->
+                    <div class="input-group">
+                        <i class='bx bxs-envelope input-icon'></i>
+                        <input type="email" id="loginEmail" placeholder="Email Address" required>
+                    </div>
+                    <div class="input-group">
+                        <i class='bx bxs-lock-alt input-icon'></i>
+                        <input type="password" id="loginPassword" placeholder="Password" required>
+                    </div>
+                    <button type="submit" class="submit-button">Login</button>
+                    <p id="loginError" class="error-message"></p>
+                    <a href="#" class="forgot-password">Forgot Password?</a>
+                </form>
+
+                <!-- Signup Form -->
+                <form id="signupForm" class="auth-form">
+                    <!-- No <h2> needed -->
+                    <div class="input-group">
+                        <i class='bx bxs-envelope input-icon'></i>
+                        <input type="email" id="signupEmail" placeholder="Email Address" required>
+                    </div>
+                    <div class="input-group">
+                        <i class='bx bxs-lock-alt input-icon'></i>
+                        <input type="password" id="signupPassword" placeholder="Password (min 6 chars)" required minlength="6">
+                    </div>
+                    <div class="input-group">
+                        <i class='bx bxs-lock input-icon'></i>
+                        <input type="password" id="signupConfirmPassword" placeholder="Confirm Password" required>
+                    </div>
+                    <button type="submit" class="submit-button">Sign Up</button>
+                    <p id="signupError" class="error-message"></p>
+                </form>
             </div>
-            <div class="form-group">
-              <label for="signupConfirmPassword">Confirm Password:</label>
-              <input type="password" id="signupConfirmPassword" required>
+
+            <!-- Optional: Social Login Divider & Buttons -->
+            <div class="social-divider">
+                <span>OR</span>
             </div>
-            <button type="submit">Sign Up</button>
-            <p id="signupError" class="error-message"></p>
-          </form>
+            <div class="social-login">
+                <button class="social-button google"><i class='bx bxl-google'></i> Continue with Google</button>
+                <button class="social-button github"><i class='bx bxl-github'></i> Continue with Github</button>
+            </div>
+
         </div>
-      </div>
+    </div>
+
+    <!-- Your existing auth.js script tag would typically be in index.html
+         or loaded dynamically as your current setup does. No change needed here. -->
+
 </body>
 </html>

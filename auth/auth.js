@@ -79,17 +79,27 @@ function initializeAuthLogic() {
    * Updates the active state of the corresponding tab button.
    */
   function showAuthForm(formIdToShow) {
-    clearErrorMessages();
+    clearErrorMessages(); // Keep this
+
+    // Select forms within this function scope or ensure they are available
+    const loginForm = document.getElementById('loginForm');
+    const signupForm = document.getElementById('signupForm');
     if (!loginForm || !signupForm) {
-         console.error("Login or Signup form element not found.");
+         console.error("Login or Signup form element not found within showAuthForm.");
          return;
     }
 
-    const isLogin = formIdToShow === 'loginForm';
-    loginForm.style.display = isLogin ? 'block' : 'none';
-    signupForm.style.display = isLogin ? 'none' : 'block';
+    // Toggle the 'active-form' class based on which form should be shown
+    if (formIdToShow === 'loginForm') {
+        loginForm.classList.add('active-form');
+        signupForm.classList.remove('active-form');
+    } else {
+        loginForm.classList.remove('active-form');
+        signupForm.classList.add('active-form');
+    }
 
-    // Update tab button active states
+    // Update tab button active states (keep this part)
+    const tabButtons = document.querySelectorAll('#authModal .tab-button'); // Ensure selection if not global
     tabButtons.forEach(button => {
         if (button.dataset.form === formIdToShow) {
             button.classList.add('active');
@@ -98,7 +108,6 @@ function initializeAuthLogic() {
         }
     });
   }
-
 
   // --- Event Listeners Setup ---
 
