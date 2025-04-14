@@ -7,36 +7,6 @@
     box-sizing: border-box;
 }
 
-/* --- Modal Backdrop & Positioning (Popup Style) --- */
-.modal {
-    display: none; /* Hidden by default */
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow-y: auto; /* Allow scroll if needed */
-
-    /* Background Image */
-    background: url('/assets/night_city.png') no-repeat center center fixed;
-    background-size: cover;
-
-    /* Dark Overlay */
-    background-color: rgba(0, 0, 0, 0.7); /* Keep backdrop dark for contrast */
-    background-blend-mode: overlay;
-
-    /* Flexbox for Centering */
-    display: flex;
-    align-items: center; /* Vertical Center */
-    justify-content: center; /* Horizontal Center */
-    padding: 20px; /* Padding for smaller screens */
-
-    /* Fade-in for backdrop */
-    opacity: 0;
-    transition: opacity 0.3s ease-in-out;
-}
-
 /* Style applied by JS */
 #authModal[style*="block"] {
    opacity: 1;
@@ -55,8 +25,8 @@
     -webkit-backdrop-filter: blur(12px) saturate(110%);
 
     padding: 40px 50px;
-    left: 50%; /* Centered horizontally */
-    top: 50%; /* Centered vertically */
+    left: 20px; /* Centered horizontally */
+    top: 20px; /* Centered vertically */
     border-radius: 16px; /* Keep rounded corners */
     /* *** SUBTLER BORDER *** */
     border: 1px solid rgba(255, 255, 255, 0.08); /* Even fainter border */
