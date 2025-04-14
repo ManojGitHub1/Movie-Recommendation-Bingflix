@@ -1,629 +1,404 @@
-/* my_stuff.css */
-/* Import Google Fonts if not done globally */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap');
+
 
 * {
-    box-sizing: border-box;
     margin: 0;
     padding: 0;
+    box-sizing: border-box;    
+  }
+
+body, html {
+    margin: 0;
+    padding: 0;
+    margin-left: 40px;
+    font-family: 'Arial', sans-serif;
+    background-color: rgb(0, 0, 0);
 }
 
-body {
-    /* Use Poppins as base font like the rest of your site */
-    font-family: 'Poppins', sans-serif;
-    background-color: #0f0f0f; /* Dark background */
-    color: #eee;
-    overflow-x: hidden;
-}
-
-/* Adjust if using fixed sidebar */
-.home-section {
-    position: relative;
-    /* Start content after the closed sidebar width */
-    margin-left: 80px;
-    padding: 20px;
-    transition: all 0.5s ease;
-    min-height: 100vh; /* Ensure it takes full height */
-}
-
-/* Adjust content margin when sidebar is open */
-.sidebar.open ~ .home-section {
-    margin-left: 250px; /* Match your sidebar's open width */
-}
-
-
-.content-section {
-    margin-bottom: 40px; /* Space between sections */
-}
-
-.section-heading {
-    font-size: 1.8em;
-    font-weight: 600;
+h2{
     color: #fff;
-    margin-bottom: 20px;
-    padding-left: 15px; /* Align with container padding */
-    border-left: 4px solid #ff5722; /* Accent color */
+    font-family: 'bradley hand itc';
+    font-size: 30px;
+    font-weight: bold;
+    text-decoration: underline;
+    
+    
 }
 
-.card-container {
+.media-title {
+  font-size: 12px;
+  font-weight: bold;
+  margin: 0;
+  color: #ddd;
+}
+
+
+.movies-container {
     display: flex;
     flex-wrap: wrap;
-    /* justify-content: space-evenly; */ /* Or center/flex-start */
-    justify-content: center; /* Center cards */
-    gap: 30px; /* Spacing between cards */
-    padding: 15px 0; /* Padding top/bottom */
-}
-
-.loading-message,
-.empty-message {
-    width: 100%;
-    text-align: center;
-    color: #888;
-    font-size: 1.1em;
-    padding: 40px 0;
-}
-
-
-/* --- Card Styles (Adapted from your template) --- */
-.card {
-    overflow: hidden;
-    width: 250px; /* Fixed width, adjust as needed */
-    height: 380px; /* Fixed height, adjust as needed */
-    background: #232323;
-    background-size: cover; /* Changed from contain */
-    background-position: center;
-    background-repeat: no-repeat;
-    box-shadow: 1px 10px 20px rgba(0, 0, 0, 0.2);
-    transition: transform 0.5s ease, box-shadow 0.5s ease;
-    border-radius: 12px; /* Rounded corners */
-    position: relative;
-    display: flex; /* Keep for internal alignment */
-    cursor: pointer; /* Make card itself clickable */
-}
-
-.card:hover {
-    transform: translateY(-10px) scale(1.03); /* Slightly lift and scale */
-    box-shadow: 1px 15px 30px rgba(0, 0, 0, 0.4);
-}
-
-/* Overlay for better text readability */
-.card::before {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 60%; /* Gradient height */
-    background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%);
-    z-index: 1;
-    transition: height 0.5s ease;
-}
-
-.card:hover::before {
-     height: 100%; /* Full overlay on hover */
-     background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.6) 100%);
-}
-
-
-/* Elements initially visible */
-.card .date {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    color: #fff;
-    font-weight: 500;
-    font-size: 0.8em;
-    background-color: rgba(0, 0, 0, 0.5);
-    padding: 3px 8px;
-    border-radius: 4px;
-    z-index: 2;
-    transition: opacity 0.5s ease, transform 0.5s ease;
-}
-
-.card .content {
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    align-self: flex-end; /* Position content at the bottom */
+    justify-content: center;
+    gap: 20px;
     padding: 20px;
-    width: 100%;
-    z-index: 2; /* Above the gradient overlay */
-    transition: opacity 0.5s ease, transform 0.5s ease;
 }
 
-.card .content .title {
-    width: 100%;
-    color: #fff;
-    font-size: 1.3em; /* Adjusted size */
-    font-weight: 600;
-    line-height: 1.3;
-    margin-bottom: 5px;
-}
-
-.card .content .tagline { /* Optional tagline style */
-    color: #ccc;
-    font-size: 0.85em;
-    font-style: italic;
-    font-weight: 300;
-    margin-bottom: 10px;
-    display: -webkit-box; /* Ellipsis for long taglines */
-    -webkit-line-clamp: 1;
-    -webkit-box-orient: vertical;
+.movie-card {
+    width: 200px;
+    border: 1px solid #ddd;
+    border-radius: 18px;
     overflow: hidden;
-}
-
-/* Elements revealed on hover */
-.card .sinopse { /* Use sinopse div for hover content */
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    padding: 20px;
-    background: transparent; /* Let card overlay handle background */
-    color: #fff;
-    z-index: 3; /* Above initial content */
-    opacity: 0; /* Hidden initially */
-    transition: opacity 0.5s ease 0.2s; /* Delay opacity transition */
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end; /* Align content to bottom */
-    pointer-events: none; /* Allow clicks to pass through initially */
-}
-
-.card:hover .sinopse {
-    opacity: 1;
-    pointer-events: auto; /* Enable interaction on hover */
-}
-
-/* Hide initial content on hover */
-.card:hover .date,
-.card:hover .content {
-    opacity: 0;
-    transform: translateY(20px); /* Move down slightly */
-}
-
-.card .sinopse .content-sinopse {
-    transform: translateY(30px); /* Start slightly lower */
-    transition: transform 0.5s ease 0.3s; /* Delay transform */
-}
-
-.card:hover .sinopse .content-sinopse {
-     transform: translateY(0);
-}
-
-.card .sinopse .text {
-    font-size: 0.9em;
-    line-height: 1.5;
-    color: #ddd;
-    font-weight: 300;
-    max-height: 120px; /* Limit overview height */
-    overflow-y: auto; /* Add scroll if overview is too long */
-    margin-bottom: 15px; /* Space before button */
-    /* Simple scrollbar styling */
-    scrollbar-width: thin;
-    scrollbar-color: #555 #232323;
-}
-
-.card .sinopse .text::-webkit-scrollbar {
-    width: 6px;
-}
-.card .sinopse .text::-webkit-scrollbar-track {
-    background: #232323;
-}
-.card .sinopse .text::-webkit-scrollbar-thumb {
-    background-color: #555;
-    border-radius: 3px;
-}
-
-
-/* "View Details" Button Styling */
-.card .sinopse .view-details-btn {
-    display: inline-block; /* Or block */
-    background-color: #ff5722; /* Accent color */
-    color: #fff;
-    padding: 8px 15px;
-    border: none;
-    border-radius: 5px;
-    font-size: 0.9em;
-    font-weight: 500;
-    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     cursor: pointer;
-    text-decoration: none;
-    transition: background-color 0.3s ease;
-    align-self: flex-start; /* Align button to the left */
-}
-
-.card .sinopse .view-details-btn:hover {
-    background-color: #e64a19; /* Darker accent */
-}
-
-/* Delete Button Styling */
-.delete-like-btn {
-    position: absolute;
-    top: 10px;
-    left: 10px; /* Position top-left */
-    background-color: rgba(255, 50, 50, 0.7); /* Reddish background */
-    color: white;
-    border: none;
-    border-radius: 50%; /* Make it circular */
-    width: 30px;
-    height: 30px;
-    font-size: 16px; /* Adjust icon size */
-    line-height: 30px; /* Center icon vertically */
-    text-align: center;
-    cursor: pointer;
-    z-index: 4; /* Above everything else */
-    opacity: 0; /* Hidden initially */
-    transition: opacity 0.3s ease, background-color 0.3s ease;
-    padding: 0; /* Remove default padding */
-}
-
-/* Show delete button only on liked items hover */
-.card.is-liked:hover .delete-like-btn {
-    opacity: 1;
-}
-
-.delete-like-btn:hover {
-    background-color: rgba(255, 0, 0, 0.9); /* Brighter red on hover */
-}
-
-
-/* --- Responsive Adjustments --- */
-@media (max-width: 1200px) {
-    .card {
-        width: 280px; /* Adjust card size */
-        height: 420px;
-    }
-}
-
-@media (max-width: 992px) {
-     /* Adjust for opened sidebar */
-    .sidebar.open ~ .home-section { margin-left: 250px; }
-    .home-section { margin-left: 80px; padding: 15px; }
-
-    .card {
-        width: 240px;
-        height: 360px;
-    }
-    .card-container { gap: 20px; }
-     .section-heading { font-size: 1.6em; }
-}
-
-@media (max-width: 768px) {
-    .home-section { margin-left: 0; /* Sidebar might overlay or be toggle-only */ }
-    .sidebar.open ~ .home-section { margin-left: 0; } /* Adjust if sidebar pushes content */
-
-    .card {
-        width: 200px;
-        height: 300px;
-    }
-     .section-heading { font-size: 1.4em; }
-     .card .content .title { font-size: 1.1em; }
-     .card .sinopse .text { font-size: 0.8em; max-height: 100px; }
-     .card .sinopse .view-details-btn { font-size: 0.8em; padding: 6px 12px;}
-     .delete-like-btn { width: 25px; height: 25px; font-size: 14px; line-height: 25px;}
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 
 }
 
-@media (max-width: 576px) {
-    .card-container { justify-content: center; gap: 15px;}
-    .card {
-        /* Make cards take more width on small screens */
-        width: calc(50% - 10px); /* Two cards per row */
-        height: auto; /* Adjust height based on aspect ratio or content */
-        aspect-ratio: 2 / 3; /* Maintain aspect ratio */
-        min-height: 250px;
-    }
-     .section-heading { font-size: 1.3em; }
-     .card .content .title { font-size: 1em; }
 
-}
-
-/* CSS for sidebar div*/
-
-.sidebar {
-  font-family: "Poppins", sans-serif;
-  position: fixed;
-  left: 0;
-  top: 0;
-  height: 100%;
-  width: 80px;
-  background: #11101d;
-  padding: 6px 14px;
-  z-index: 999;
-  transition: all 0.5s ease;
-}
-.sidebar.open {
-  width: 250px;
-}
-.sidebar .logo-details {
-  height: 60px;
-  display: flex;
-  align-items: center;
-  position: relative;
-}
-.sidebar .logo-details .icon {
-  opacity: 0;
-  transition: all 0.5s ease;
-}
-.sidebar .logo-details .logo_name {
-  color: #fff;
-  font-size: 20px;
-  font-weight: 600;
-  opacity: 0;
-  transition: all 0.5s ease;
-}
-.sidebar.open .logo-details .icon,
-.sidebar.open .logo-details .logo_name {
-  opacity: 1;
-}
-.sidebar .logo-details #btn {
-  position: absolute;
-  top: 50%;
-  right: 0;
-  transform: translateY(-50%);
-  font-size: 22px;
-  transition: all 0.4s ease;
-  font-size: 23px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.5s ease;
-}
-.sidebar.open .logo-details #btn {
-  text-align: right;
-}
-.sidebar i {
-  color: #fff;
-  height: 60px;
-  min-width: 50px;
-  font-size: 28px;
-  text-align: center;
-  line-height: 60px;
-}
-.sidebar .nav-list {
-  margin-top: 20px;
-  height: 100%;
-}
-.sidebar li {
-  position: relative;
-  margin: 8px 0;
-  list-style: none;
-}
-.sidebar li .tooltip {
-  position: absolute;
-  top: -20px;
-  left: calc(100% + 15px);
-  z-index: 3;
-  background: #fff;
-  color: #000;
-  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
-  padding: 6px 12px;
-  border-radius: 4px;
-  font-size: 15px;
-  font-weight: 400;
-  opacity: 0;
-  white-space: nowrap;
-  pointer-events: none;
-  transition: 0s;
-}
-.sidebar li:hover .tooltip {
-  opacity: 1;
-  pointer-events: auto;
-  transition: all 0.4s ease;
-  top: 50%;
-  transform: translateY(-50%);
-}
-.sidebar.open li .tooltip {
-  display: none;
-}
-.sidebar input {
-  font-size: 15px;
-  color: #fff;
-  font-weight: 400;
-  outline: none;
-  height: 50px;
-  width: 100%;
-  width: 50px;
-  border: none;
-  border-radius: 12px;
-  transition: all 0.5s ease;
-  background: #1d1b31;
-}
-.sidebar.open input {
-  padding: 0 20px 0 50px;
-  width: 100%;
-}
-.sidebar .bx-search {
-  position: absolute;
-  top: 50%;
-  left: 0;
-  transform: translateY(-50%);
-  font-size: 22px;
-  background: #1d1b31;
-  color: #fff;
-}
-.sidebar.open .bx-search:hover {
-  background: #1d1b31;
-  color: #fff;
-}
-.sidebar .bx-search:hover {
-  background: #fff;
-  color: #11101d;
-}
-.sidebar li a {
-  display: flex;
-  height: 100%;
-  width: 100%;
-  border-radius: 12px;
-  align-items: center;
-  text-decoration: none;
-  transition: all 0.4s ease;
-  background: #11101d;
-}
-.sidebar li a:hover {
-  background: #fff;
-}
-.sidebar li a .links_name {
-  color: #fff;
-  font-size: 15px;
-  font-weight: 400;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition: 0.4s;
-}
-.sidebar.open li a .links_name {
-  opacity: 1;
-  pointer-events: auto;
-}
-.sidebar li a:hover .links_name,
-.sidebar li a:hover i {
-  transition: all 0.5s ease;
-  color: #11101d;
-}
-.sidebar li i {
-  height: 50px;
-  line-height: 50px;
-  font-size: 18px;
-  border-radius: 12px;
-}
-.sidebar li.profile {
-  position: fixed;
-  height: 60px;
-  width: 78px;
-  left: 0;
-  bottom: -8px;
-  padding: 10px 14px;
-  background: #1d1b31;
-  transition: all 0.5s ease;
-  overflow: hidden;
-}
-.sidebar.open li.profile {
-  width: 250px;
-}
-.sidebar li .profile-details {
-  display: flex;
-  align-items: center;
-  flex-wrap: nowrap;
-}
-.sidebar li img {
-  height: 45px;
-  width: 45px;
-  object-fit: cover;
-  border-radius: 6px;
-  margin-right: 10px;
-}
-.sidebar li.profile .name,
-.sidebar li.profile .job {
-  font-size: 15px;
-  font-weight: 400;
-  color: #fff;
-  white-space: nowrap;
-}
-.sidebar li.profile .job {
-  font-size: 12px;
-}
-.sidebar .profile #log_out {
-  position: absolute;
-  top: 50%;
-  right: 0;
-  transform: translateY(-50%);
-  background: #1d1b31;
-  width: 100%;
-  height: 60px;
-  line-height: 60px;
-  border-radius: 0px;
-  transition: all 0.5s ease;
-}
-.sidebar.open .profile #log_out {
-  width: 50px;
-  background: none;
-}
-.home-section {
-  position: relative;
-  background: #e4e9f7;
-  min-height: 100vh;
-  top: 0;
-  left: 78px;
-  width: calc(100% - 78px);
-  transition: all 0.5s ease;
-}
-.sidebar.open ~ .home-section {
-  left: 250px;
-  width: calc(100% - 250px);
-}
-
-.home-section .text {
-  display: inline-block;
-  color: #11101d;
-  font-size: 25px;
-  font-weight: 500;
-  margin: 18px;
-}
-@media (max-width: 420px) {
-  .sidebar li .tooltip {
-    display: none;
+.movie-card:hover {
+    transform: scale(1.05);
   }
+
+.movie-card img {
+    width: 100%;
+    height: auto;
+    display: block;
 }
 
-.card-image {
-  transition: transform 0.3s ease-in-out;
+.movie-details {
+    padding: 10px;
 }
 
 
-/* logout button */
-/* Base styles */
-.sidebar li.logout-section {
-  width: 100%;
-  list-style: none;
+
+.movie-overview {
+    font-size: 14px;
+    margin-top: 5px;
+    color: #666;
 }
 
-/* Logout button base style */
-.sidebar li.logout-section .logout-button {
+
+.series-container {
   display: flex;
-  align-items: center;
-  justify-content: center; /* Center when sidebar is closed */
-  width: 90%;
-  margin: 10px auto;
-  padding: 8px 8px;
-  background-color: #e50914;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+  padding: 20px;
+}
+
+.series-card {
+  width: 200px;
+  border: 1px solid #ddd;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   cursor: pointer;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.series-card:hover {
+  transform: scale(1.05);
+}
+
+.series-card img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.series-details {
+  padding: 10px;
+}
+
+
+
+.series-overview {
   font-size: 14px;
-  transition: all 0.3s ease;
+  margin-top: 5px;
+  color: #666;
 }
 
-/* Icon */
-.sidebar li.logout-section .logout-button i {
-  font-size: 20px;
-  margin-right: 0; /* No spacing when sidebar is closed */
-  transition: margin-right 0.3s ease;
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    .movie-card {
+        width: 40%;
+        max-height: 40%;
+       
+    }
+    .movie-title{
+        font-size: 8px;
+    }
 }
 
-/* Text - hidden by default */
-.sidebar li.logout-section .logout-text {
-  display: none;
-  transition: opacity 0.3s ease;
-}
 
-/* When sidebar is open */
-.sidebar.open li.logout-section .logout-button {
-  justify-content: flex-start;
-  padding-left: 16px;
-}
 
-.sidebar.open li.logout-section .logout-button i {
-  margin-right: 10px;
-}
 
-.sidebar.open li.logout-section .logout-text {
-  display: inline;
-}
-
-/* Hover effect */
-.sidebar li.logout-section .logout-button:hover {
-  background-color: #cc0812;
-}
+@keyframes shimmer {
+    0% {
+      background-position: -800px 0;
+    }
+    100% {
+      background-position: 800px 0;
+    }
+  }
+  
+  .shimmer-bg {
+    height: 300px;
+    background-color: #223860; /* Base color */
+    background-image: linear-gradient(
+      to right, 
+      rgba(255, 255, 255, 0) 0%, 
+      rgba(255, 255, 255, 0.2) 50%, 
+      rgba(255, 255, 255, 0) 100%
+    );
+    background-repeat: no-repeat;
+    background-size: 800px 100%; /* Control the width of the shimmer effect */
+    animation: shimmer 2s infinite linear;
+  }
+  
+  
+.sidebar{
+    font-family: "Poppins" , sans-serif;
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 80px;
+    background: #11101D;
+    padding: 6px 14px;
+    z-index: 999;
+    transition: all 0.5s ease;
+    
+    }
+    .sidebar.open{
+    width: 250px;
+    }
+    .sidebar .logo-details{
+    height: 60px;
+    display: flex;
+    align-items: center;
+    position: relative;
+    }
+    .sidebar .logo-details .icon{
+    opacity: 0;
+    transition: all 0.5s ease;
+    }
+    .sidebar .logo-details .logo_name{
+    color: #fff;
+    font-size: 20px;
+    font-weight: 600;
+    opacity: 0;
+    transition: all 0.5s ease;
+    }
+    .sidebar.open .logo-details .icon,
+    .sidebar.open .logo-details .logo_name{
+    opacity: 1;
+    }
+    .sidebar .logo-details #btn{
+    position: absolute;
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+    font-size: 22px;
+    transition: all 0.4s ease;
+    font-size: 23px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.5s ease;
+    }
+    .sidebar.open .logo-details #btn{
+    text-align: right;
+    }
+    .sidebar i{
+    color: #fff;
+    height: 60px;
+    min-width: 50px;
+    font-size: 28px;
+    text-align: center;
+    line-height: 60px;
+    }
+    .sidebar .nav-list{
+    margin-top: 20px;
+    height: 100%;
+    }
+    .sidebar li{
+    position: relative;
+    margin: 8px 0;
+    list-style: none;
+    }
+    .sidebar li .tooltip{
+    position: absolute;
+    top: -20px;
+    left: calc(100% + 15px);
+    z-index: 3;
+    background: #fff;
+    color: #000;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 15px;
+    font-weight: 400;
+    opacity: 0;
+    white-space: nowrap;
+    pointer-events: none;
+    transition: 0s;
+    }
+    .sidebar li:hover .tooltip{
+    opacity: 1;
+    pointer-events: auto;
+    transition: all 0.4s ease;
+    top: 50%;
+    transform: translateY(-50%);
+    }
+    .sidebar.open li .tooltip{
+    display: none;
+    }
+    .sidebar input{
+    font-size: 15px;
+    color: #FFF;
+    font-weight: 400;
+    outline: none;
+    height: 50px;
+    width: 100%;
+    width: 50px;
+    border: none;
+    border-radius: 12px;
+    transition: all 0.5s ease;
+    background: #1d1b31;
+    }
+    .sidebar.open input{
+    padding: 0 20px 0 50px;
+    width: 100%;
+    }
+    .sidebar .bx-search{
+    position: absolute;
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+    font-size: 22px;
+    background: #1d1b31;
+    color: #FFF;
+    }
+    .sidebar.open .bx-search:hover{
+    background: #1d1b31;
+    color: #FFF;
+    }
+    .sidebar .bx-search:hover{
+    background: #FFF;
+    color: #11101d;
+    }
+    .sidebar li a{
+    display: flex;
+    height: 100%;
+    width: 100%;
+    border-radius: 12px;
+    align-items: center;
+    text-decoration: none;
+    transition: all 0.4s ease;
+    background: #11101D;
+    }
+    .sidebar li a:hover{
+    background: #FFF;
+    }
+    .sidebar li a .links_name{
+    color: #fff;
+    font-size: 15px;
+    font-weight: 400;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: 0.4s;
+    }
+    .sidebar.open li a .links_name{
+    opacity: 1;
+    pointer-events: auto;
+    }
+    .sidebar li a:hover .links_name,
+    .sidebar li a:hover i{
+    transition: all 0.5s ease;
+    color: #11101D;
+    }
+    .sidebar li i{
+    height: 50px;
+    line-height: 50px;
+    font-size: 18px;
+    border-radius: 12px;
+    }
+    .sidebar li.profile{
+    position: fixed;
+    height: 60px;
+    width: 78px;
+    left: 0;
+    bottom: -8px;
+    padding: 10px 14px;
+    background: #1d1b31;
+    transition: all 0.5s ease;
+    overflow: hidden;
+    }
+    .sidebar.open li.profile{
+    width: 250px;
+    }
+    .sidebar li .profile-details{
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    }
+    .sidebar li img{
+    height: 45px;
+    width: 45px;
+    object-fit: cover;
+    border-radius: 6px;
+    margin-right: 10px;
+    }
+    .sidebar li.profile .name,
+    .sidebar li.profile .job{
+    font-size: 15px;
+    font-weight: 400;
+    color: #fff;
+    white-space: nowrap;
+    }
+    .sidebar li.profile .job{
+    font-size: 12px;
+    }
+    .sidebar .profile #log_out{
+    position: absolute;
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+    background: #1d1b31;
+    width: 100%;
+    height: 60px;
+    line-height: 60px;
+    border-radius: 0px;
+    transition: all 0.5s ease;
+    }
+    .sidebar.open .profile #log_out{
+    width: 50px;
+    background: none;
+    }
+    .home-section{
+    position: relative;
+    background: #E4E9F7;
+    min-height: 100vh;
+    top: 0;
+    left: 78px;
+    width: calc(100% - 78px);
+    transition: all 0.5s ease;
+    
+    }
+    .sidebar.open ~ .home-section{
+    left: 250px;
+    width: calc(100% - 250px);
+    }
+    
+    
+    .home-section .text{
+    display: inline-block;
+    color: #11101d;
+    font-size: 25px;
+    font-weight: 500;
+    margin: 18px
+    }
+    @media (max-width: 420px) {
+    .sidebar li .tooltip{
+      display: none;
+    }
+    }

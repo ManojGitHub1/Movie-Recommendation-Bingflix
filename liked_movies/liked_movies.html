@@ -4,101 +4,94 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Liked Movies</title>
-
-    <!-- Link to Boxicons -->
-    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
-
-    <link href="liked_movies.css" rel="stylesheet">
-
-    <!-- Google Fonts (from your original liked_movies.html) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Press+Start+2P&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
-
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="liked_movies.css">
 </head>
 <body>
+    
+  <div  class="sidebar">
+    <div class="logo-details">
+      <i class='bx bxl-c-plus-plus icon'></i>
+        <div class="logo_name">BingeFlix</div>
+        <i class='bx bx-menu' id="btn" ></i>
+    </div>
+    <ul class="nav-list">
+      <li>
+          <i class='bx bx-search' ></i>
+         <input id="searchInput" type="text" placeholder="Search..." onkeydown="if (event.keyCode === 13) searchMovies()">
+         <span class="tooltip">Search</span>
+      </li>
 
-    <div class="sidebar">
-        <div class="logo-details">
-          <i class='bx bxl-c-plus-plus icon'></i> <!-- Or your actual icon -->
-            <div class="logo_name">BingeFlix</div>
-            <i class='bx bx-menu' id="btn" ></i>
-        </div>
-        <ul class="nav-list">
-          <li>
-              <i class='bx bx-search' ></i>
-             <input id="searchInput" type="text" placeholder="Search...">
-             <!-- Removed inline JS for search, will handle in JS file -->
-             <span class="tooltip">Search</span>
-          </li>
-          <li>
-            <a href="../index.html"> <i class='bx bx-home'></i><span class="links_name">Home</span></a>
-             <span class="tooltip">Home</span>
-          </li>
-          <li>
-            <a href="#"> <i class='bx bx-compass'></i><span class="links_name">Explore</span></a>
-             <span class="tooltip">Explore</span>
-          </li>
-           <!-- Link to THIS page -->
-          <li>
-            <a href="my_stuff.html"> <i class='bx bx-heart'></i><span class="links_name">My Stuff</span></a>
-             <span class="tooltip">My Stuff</span>
-          </li>
-           <!-- Link to Profile Page (Create later) -->
-           <li>
-            <a href="../profile/profile.html"> <i class='bx bx-user'></i><span class="links_name">Profile</span></a>
-            <span class="tooltip">Profile</span>
-          </li>
-          <!-- Other sidebar items -->
-          <li class="profile">
-             <div class="profile-details">
-               <!-- <img src="profile.jpg" alt="profileImg"> -->
-               <div class="name_job">
-                 <div class="name" id="sidebar-username">User</div> <!-- ID to update name -->
-                 <div class="job" id="sidebar-user-email">Email</div> <!-- ID to update email -->
-               </div>
-             </div>
-             <i class='bx bx-log-out' id="log_out" ></i>
-         </li>
-        </ul>
-      </div>
+      <li>
+        <a href="../index.html">
+          <i class='bx bx-home'></i>
+          <span class="links_name">Home</span>
+        </a>
+         <span class="tooltip">Home</span>
+      </li>
 
-    <!-- Main Content Area (adjust margin-left if sidebar is fixed) -->
-    <section class="home-section">
-        <!-- Optional: Main Page Heading -->
-        <!-- <h1 class="main-heading">My Stuff</h1> -->
 
-        <!-- Section 1: Recommendations -->
-        <div class="content-section">
-            <h2 class="section-heading">Recommended For You</h2>
-            <div id="recommendationsContainer" class="card-container">
-                <!-- Recommendation cards will be loaded here by JS -->
-                <p class="loading-message">Loading recommendations...</p>
-            </div>
-        </div>
+      <li>
+        <a href="https://w2g.tv/en/" target="_blank">
+          <i class='bx bx-party' ></i>
+          <span class="links_name">Watchparty</span>
+        </a>
+         <span class="tooltip">Party</span>
+      </li>
 
-        <!-- Section 2: Liked Movies -->
-        <div class="content-section">
-            <h2 class="section-heading">Liked Movies</h2>
-            <div id="likedMoviesContainer" class="card-container">
-                <!-- Liked movie cards will be loaded here by JS -->
-                 <p class="loading-message">Loading liked movies...</p>
-            </div>
-        </div>
+      
+      <li>
+       <a href="#">
+         <i class='bx bx-user' ></i>
+         <span class="links_name">User</span>
+       </a>
+       <span class="tooltip">User</span>
+     </li>
 
-        <!-- Section 3: Liked Series -->
-        <div class="content-section">
-            <h2 class="section-heading">Liked Series</h2>
-            <div id="likedSeriesContainer" class="card-container">
-                <!-- Liked series cards will be loaded here by JS -->
-                 <p class="loading-message">Loading liked series...</p>
-            </div>
-        </div>
+     <li>
+       <a href="../liked_movies/liked_movies.html">
+         <i class='bx bx-heart' ></i>
+         <span class="links_name">Liked</span>
+       </a>
+       <span class="tooltip">Liked</span>
+     </li>
 
-    </section>
+     <li>
+       <a href="#">
+         <i class='bx bx-cog' ></i>
+         <span class="links_name">Setting</span>
+       </a>
+       <span class="tooltip">Setting</span>
+     </li>
 
-    <script src="liked_movies.js"></script>
+     
+
+     <li class="profile">
+         <div class="profile-details">
+           <img src="../assets/virat.png" alt="profileImg">
+           <div class="name_job">
+             <div class="name">Abhilash </div>
+             <div class="job">Web designer</div>
+           </div>
+         </div>
+         <i class='bx bx-log-out' id="log_out" ></i>
+     </li>
+    </ul>
+  </div>
+
+  <h2 style="text-align: center; color: #eee; margin: 20px 0 10px 70px;">Your Movie Recommendations</h2>
+  <div id="moviesContainer" class="movies-container" style="margin-left: 70px; /* Adjust margin if needed */">
+  </div>
+
+  <h2 style="text-align: center; color: #eee; margin: 40px 0 10px 70px;">Your Liked Series</h2>
+  <div id="seriesContainer" class="movies-container" style="margin-left: 70px; /* Adjust margin if needed */">
+  </div>
+  
+  <script src="liked_movies.js"></script>
 
 </body>
 </html>
