@@ -22,8 +22,12 @@ const UserSchema = new mongoose.Schema({
     default: Date.now,
   },
   likedMovies: {
-    type: [Number], // Array of numbers (assuming TMDB IDs are numbers)
+    type: [Number], // Array of numbers
     default: [],    // Default to an empty array
+  },
+  likedSeries: {
+    type: [Number], // Array of TMDB Series IDs
+    default: [],
   },
   recommendedMovies: {
     type: [Number], // Array of numbers for recommended movie IDs

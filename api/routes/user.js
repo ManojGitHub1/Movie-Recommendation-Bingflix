@@ -8,8 +8,11 @@ const { protect } = require('../middleware/auth');
 const {
     addLike,
     getLikes,
-    getRecommendations
-    // removeLike // Optional: for unliking functionality later
+    getRecommendations,
+    getUserProfile,
+    addSeriesLike,
+    removeMovieLike,
+    removeSeriesLike
 } = require('../controllers/userController'); // We'll create this controller file next
 
 // Define the routes
@@ -18,6 +21,7 @@ const {
 // @route   POST /api/user/likes
 // @access  Private (requires authentication)
 router.post('/likes', protect, addLike);
+router.delete('/likes/movie/:movieId', protect, removeMovieLike);
 
 // @desc    Get the list of liked movie IDs for the logged-in user
 // @route   GET /api/user/likes
@@ -28,6 +32,13 @@ router.get('/likes', protect, getLikes);
 // @route   GET /api/user/recommendations
 // @access  Private
 router.get('/recommendations', protect, getRecommendations);
+
+// Profile
+router.get('/profile', protect, getUserProfile);
+
+// Likes Series
+router.post('/likes/series', protect, addSeriesLike);
+router.delete('/likes/series/:seriesId', protect, removeSeriesLike);
 
 /* Optional: Route for removing a like
 // @desc    Remove a movie from the user's liked list

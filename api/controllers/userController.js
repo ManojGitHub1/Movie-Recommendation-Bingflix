@@ -157,30 +157,72 @@ exports.addLike = async (req, res) => {
     console.log("--- [addLike DEBUG] Function finished ---"); // Log Function End
 };
 
+
+exports.addSeriesLike = async (req, res) => {
+    // Assuming the series ID is sent in the request body like { seriesId: 12345 }
+    const { seriesId } = req.body;
+
+    if (!seriesId || typeof seriesId !== 'number') {
+        return res.status(400).json({ message: 'Valid seriesId is required in request body' });
+    }
+
+    try {
+        // Find the user and add the seriesId to the likedSeries array using $addToSet
+        // $addToSet ensures the ID is only added if it doesn't already exist
+        const updatedUser = await User.findByIdAndUpdate(
+            req.user.id, // User ID from the 'protect' middleware
+            { $addToSet: { likedSeries: seriesId } },
+            { new: true, select: 'likedSeries' } // Return the updated document, only the likedSeries field
+        );
+
+        if (!updatedUser) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        console.log(`[API] Series ID ${seriesId} added to likedSeries for user ${req.user.id}`);
+
+        // Decision: Should liking a series trigger movie recommendation updates?
+        // For now, we are NOT triggering it. If you want to, uncomment the next line:
+        // triggerRecommendationUpdate(req.user.id);
+
+        // Send back the updated list of liked series IDs (or just success)
+        res.status(200).json({
+            message: 'Series added to likes',
+            likedSeries: updatedUser.likedSeries // Send back the current list
+        });
+
+    } catch (error) {
+        console.error('[API] Error in addSeriesLike controller:', error);
+        res.status(500).json({ message: 'Server error adding series like' });
+    }
+};
+
+
 // @desc    Get the list of liked movie IDs for the logged-in user
 // @route   GET /api/user/likes
 // @access  Private (Requires authentication)
 exports.getLikes = async (req, res) => {
-    const userId = req.user.id; // Get user ID from the 'protect' middleware
-
+    console.log(`[API] GET /api/user/likes invoked for user ${req.user.id}`);
     try {
-        // Find the user and select only the 'likedMovies' field for efficiency.
-        const user = await User.findById(userId).select('likedMovies');
+        // Fetch user document selecting BOTH likedMovies and likedSeries fields
+        const user = await User.findById(req.user.id).select('likedMovies likedSeries');
 
         if (!user) {
-            // Defensive check, although 'protect' should ensure the user exists.
-            return res.status(404).json({ success: false, message: 'User not found' });
+            console.log('[API] User not found for ID:', req.user.id);
+            return res.status(404).json({ message: 'User not found' });
         }
 
-        // Return the array of liked movie IDs. Send an empty array if the field is null/undefined.
+        console.log(`[API] Found likes for user ${req.user.id}: Movies=${user.likedMovies?.length || 0}, Series=${user.likedSeries?.length || 0}`);
+
+        // Return both arrays in the response
         res.status(200).json({
-            success: true,
-            likedMovies: user.likedMovies || []
+            likedMovies: user.likedMovies || [], // Default to empty array if null/undefined
+            likedSeries: user.likedSeries || []  // Default to empty array if null/undefined
         });
 
     } catch (error) {
-        console.error('Error fetching liked movies:', error);
-        res.status(500).json({ success: false, message: 'Server error fetching liked movies.' });
+        console.error('[API] Error in getLikes controller:', error);
+        res.status(500).json({ message: 'Server error fetching likes' });
     }
 };
 
