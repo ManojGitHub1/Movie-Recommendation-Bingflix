@@ -1,5 +1,6 @@
 Flask>=2.0          # For creating the HTTP endpoint
-pymongo>=4.0        # For MongoDB connection
+
+boto3>=1.28      # AWS SDK for Python
 python-dotenv>=0.19 # To load environment variables locally (optional for Vercel deployment)
 requests>=2.25      # To make requests to TMDB API
 scikit-learn>=1.0   # For TF-IDF and cosine similarity
