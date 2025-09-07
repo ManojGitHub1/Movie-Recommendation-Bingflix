@@ -33,15 +33,24 @@ const loadSecrets = async () => {
     }
 };
 
+const serverlessOptions = {
+    // This tells the wrapper that the base path for our Express app
+    // is everything AFTER the stage name in the URL.
+    base: 'default' 
+};
+
 // Create a wrapper handler
 const handler = async (event, context) => {
-    // Check if secrets are already loaded. Lambda can reuse execution environments.
+    // Optional: you can leave this in for now for debugging, or remove it.
+    console.log("RECEIVED EVENT:", JSON.stringify(event, null, 2));
+
     if (!process.env.JWT_SECRET) {
         await loadSecrets();
     }
     
-    // Pass the request to the express app
-    const expressHandler = serverless(app);
+    // --- MODIFIED: Pass the options to the serverless function ---
+    const expressHandler = serverless(app, serverlessOptions);
+
     return expressHandler(event, context);
 };
 
