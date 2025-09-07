@@ -1,7 +1,7 @@
 // api/lambda.js
 const serverless = require('serverless-http');
 const { SSMClient, GetParametersCommand } = require('@aws-sdk/client-ssm');
-const app = require('./index'); // Our main express app
+const app = require('./index');
 
 // This function fetches secrets from SSM Parameter Store
 const loadSecrets = async () => {
@@ -41,15 +41,15 @@ const serverlessOptions = {
 
 // Create a wrapper handler
 const handler = async (event, context) => {
-    // Optional: you can leave this in for now for debugging, or remove it.
+    // You can keep this for debugging your first few requests
     console.log("RECEIVED EVENT:", JSON.stringify(event, null, 2));
 
     if (!process.env.JWT_SECRET) {
         await loadSecrets();
     }
     
-    // --- MODIFIED: Pass the options to the serverless function ---
-    const expressHandler = serverless(app, serverlessOptions);
+    // NO MORE OPTIONS NEEDED. The {proxy+} route handles everything.
+    const expressHandler = serverless(app);
 
     return expressHandler(event, context);
 };
