@@ -13,7 +13,7 @@
 
 ## Original Source
 > 📝 **Note**  
-> This project was originally created and designed by my incredibly talented friend, [**Abhilash Sarangi**](https://github.com/dev1abhi).  
+> This project was originally created & designed by my incredibly talented friend, [**Abhilash Sarangi**](https://github.com/dev1abhi).  
 > I was fortunate to contribute a small part to this amazing initiative, and I’m truly grateful for the opportunity.  
 > All major credits go to him for bringing this brilliant concept to life.  
 >
