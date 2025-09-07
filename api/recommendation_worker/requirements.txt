@@ -1,4 +1,4 @@
-Flask>=2.0          # For creating the HTTP endpoint
+# Flask>=2.0          # For creating the HTTP endpoint
 
 boto3>=1.28      # AWS SDK for Python
 python-dotenv>=0.19 # To load environment variables locally (optional for Vercel deployment)
@@ -6,4 +6,4 @@ requests>=2.25      # To make requests to TMDB API
 scikit-learn>=1.0   # For TF-IDF and cosine similarity
 pandas>=1.3         # For data handling
 numpy>=1.20        # Included as pandas/sklearn dependency, but good to list
-gunicorn>=20.0     # For running the app in Cloud Run
+# gunicorn>=20.0     # For running the app in Cloud Run

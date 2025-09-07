@@ -1,0 +1,76 @@
+version: 0.2
+
+env:
+  variables:
+    AWS_ACCOUNT_ID: "036541096163" # <-- Use your AWS Account ID
+    AWS_DEFAULT_REGION: "ap-south-1"
+    # --- Node.js API Config ---
+    NODE_API_LAMBDA_FUNCTION_NAME: "BingflixApiNode"
+    # --- Python Worker Config ---
+    PYTHON_WORKER_IMAGE_REPO_NAME: "bingflix-python-worker"
+    PYTHON_WORKER_LAMBDA_FUNCTION_NAME: "BingflixRecommendationWorker"
+    PYTHON_WORKER_IMAGE_TAG: "latest"
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 18
+  pre_build:
+    commands:
+      # --- Change Detection Logic ---
+      # This is the core MLOps/DevOps logic. We check which files have changed.
+      - echo "Detecting changed files..."
+      # Get a list of files changed in the last commit
+      - CHANGED_FILES=$(git diff-tree --no-commit-id --name-only -r HEAD)
+      - echo "Changed files: $CHANGED_FILES"
+
+      # Set flags based on changed paths
+      - |
+        if echo "$CHANGED_FILES" | grep -q "api/index.js\|api/controllers/\|api/routes/\|api/middleware/\|api/lambda.js\|api/package.json"; then
+          echo "Node.js API changes detected."
+          export DEPLOY_NODE_API=true
+        else
+          echo "No Node.js API changes detected."
+          export DEPLOY_NODE_API=false
+        fi
+      - |
+        if echo "$CHANGED_FILES" | grep -q "api/recommendation_worker/"; then
+          echo "Python worker changes detected."
+          export DEPLOY_PYTHON_WORKER=true
+        else
+          echo "No Python worker changes detected."
+          export DEPLOY_PYTHON_WORKER=false
+        fi
+
+  build:
+    commands:
+      # --- Conditional Build: Node.js API ---
+      - |
+        if [ "$DEPLOY_NODE_API" = "true" ]; then
+          echo "--- Building Node.js API ---"
+          cd api
+          npm install --production
+          zip -r ../node_api_package.zip .
+          cd ..
+        fi
+      # --- Conditional Build: Python Worker ---
+      - |
+        if [ "$DEPLOY_PYTHON_WORKER" = "true" ]; then
+          echo "--- Building Python Worker ---"
+          echo "Logging in to Amazon ECR..."
+          aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+          echo "Building and tagging the Docker image..."
+          docker build -t $PYTHON_WORKER_IMAGE_REPO_NAME:$PYTHON_WORKER_IMAGE_TAG -f api/recommendation_worker/Dockerfile ./api/recommendation_worker
+          docker tag $PYTHON_WORKER_IMAGE_REPO_NAME:$PYTHON_WORKER_IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$PYTHON_WORKER_IMAGE_REPO_NAME:$PYTHON_WORKER_IMAGE_TAG
+          echo "Pushing Docker image to ECR..."
+          docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$PYTHON_WORKER_IMAGE_REPO_NAME:$PYTHON_WORKER_IMAGE_TAG
+        fi
+
+artifacts:
+  # We define two separate artifact outputs. The pipeline will use these.
+  files:
+    - node_api_package.zip
+    - imagedefinitions.json # This file will only be created if the python worker is built
+  discard-paths: yes
+  # The name of the artifact must match the output artifact name in the pipeline's build stage
+  name: BuildOutput
