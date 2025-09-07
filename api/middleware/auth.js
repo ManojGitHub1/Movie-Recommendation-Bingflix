@@ -1,6 +1,6 @@
+// api/middleware/auth.js
 const jwt = require('jsonwebtoken');
-const User = require('../models/User'); // Optional: if you want to attach the full user object
-require('dotenv').config(); // Make sure JWT_SECRET is loaded
+require('dotenv').config();
 
 const protect = async (req, res, next) => {
   let token;
@@ -10,19 +10,19 @@ const protect = async (req, res, next) => {
     req.headers.authorization.startsWith('Bearer')
   ) {
     try {
+      // Get token from header
       token = req.headers.authorization.split(' ')[1];
+
+      // Verify token
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      req.user = { id: decoded.id };
+
+      // Attach user's email to the request object. This is our user identifier now.
+      req.user = { email: decoded.email };
+
       next();
     } catch (error) {
       console.error('Token verification failed:', error);
-       if (error.name === 'JsonWebTokenError') {
-          return res.status(401).json({ success: false, message: 'Not authorized, token failed' });
-      }
-      if (error.name === 'TokenExpiredError') {
-          return res.status(401).json({ success: false, message: 'Not authorized, token expired' });
-      }
-       return res.status(401).json({ success: false, message: 'Not authorized' });
+      return res.status(401).json({ success: false, message: 'Not authorized, token failed' });
     }
   }
 
