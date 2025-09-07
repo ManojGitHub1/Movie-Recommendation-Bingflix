@@ -2,11 +2,9 @@ version: 0.2
 
 env:
   variables:
-    AWS_ACCOUNT_ID: "036541096163" # <-- Use your AWS Account ID
+    AWS_ACCOUNT_ID: "036541096163" # Your AWS Account ID
     AWS_DEFAULT_REGION: "ap-south-1"
-    # --- Node.js API Config ---
     NODE_API_LAMBDA_FUNCTION_NAME: "BingflixApiNode"
-    # --- Python Worker Config ---
     PYTHON_WORKER_IMAGE_REPO_NAME: "bingflix-python-worker"
     PYTHON_WORKER_LAMBDA_FUNCTION_NAME: "BingflixRecommendationWorker"
     PYTHON_WORKER_IMAGE_TAG: "latest"
@@ -17,44 +15,44 @@ phases:
       nodejs: 18
   pre_build:
     commands:
-      # --- Change Detection Logic ---
-      # This is the core MLOps/DevOps logic. We check which files have changed.
       - echo "Detecting changed files..."
-      # Get a list of files changed in the last commit
       - CHANGED_FILES=$(git diff-tree --no-commit-id --name-only -r HEAD)
       - echo "Changed files: $CHANGED_FILES"
-
-      # Set flags based on changed paths
-      - |
-        if echo "$CHANGED_FILES" | grep -q "api/index.js\|api/controllers/\|api/routes/\|api/middleware/\|api/lambda.js\|api/package.json"; then
-          echo "Node.js API changes detected."
-          export DEPLOY_NODE_API=true
-        else
-          echo "No Node.js API changes detected."
-          export DEPLOY_NODE_API=false
-        fi
-      - |
-        if echo "$CHANGED_FILES" | grep -q "api/recommendation_worker/"; then
-          echo "Python worker changes detected."
-          export DEPLOY_PYTHON_WORKER=true
-        else
-          echo "No Python worker changes detected."
-          export DEPLOY_PYTHON_WORKER=false
-        fi
-
   build:
     commands:
-      # --- Conditional Build: Node.js API ---
+      # This is the new, combined build script.
+      # It's a single command that contains all the logic.
       - |
+        set -e # This makes the script exit immediately if any command fails
+
+        # --- Change Detection Logic ---
+        DEPLOY_NODE_API=false
+        if echo "$CHANGED_FILES" | grep -qE "api/index.js|api/controllers/|api/routes/|api/middleware/|api/lambda.js|api/package.json"; then
+          echo "Node.js API changes detected."
+          DEPLOY_NODE_API=true
+        else
+          echo "No Node.js API changes detected."
+        fi
+
+        DEPLOY_PYTHON_WORKER=false
+        if echo "$CHANGED_FILES" | grep -q "api/recommendation_worker/"; then
+          echo "Python worker changes detected."
+          DEPLOY_PYTHON_WORKER=true
+        else
+          echo "No Python worker changes detected."
+        fi
+
+        # --- Conditional Build: Node.js API ---
         if [ "$DEPLOY_NODE_API" = "true" ]; then
           echo "--- Building Node.js API ---"
           cd api
           npm install --production
           zip -r ../node_api_package.zip .
           cd ..
+          echo "Node.js API build complete."
         fi
-      # --- Conditional Build: Python Worker ---
-      - |
+
+        # --- Conditional Build: Python Worker ---
         if [ "$DEPLOY_PYTHON_WORKER" = "true" ]; then
           echo "--- Building Python Worker ---"
           echo "Logging in to Amazon ECR..."
@@ -64,13 +62,17 @@ phases:
           docker tag $PYTHON_WORKER_IMAGE_REPO_NAME:$PYTHON_WORKER_IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$PYTHON_WORKER_IMAGE_REPO_NAME:$PYTHON_WORKER_IMAGE_TAG
           echo "Pushing Docker image to ECR..."
           docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$PYTHON_WORKER_IMAGE_REPO_NAME:$PYTHON_WORKER_IMAGE_TAG
+          echo "Python Worker build complete."
         fi
 
+        # --- Final Check ---
+        if [ "$DEPLOY_NODE_API" = "false" ] && [ "$DEPLOY_PYTHON_WORKER" = "false" ]; then
+          echo "No relevant changes detected. Skipping build."
+        fi
+        
 artifacts:
-  # We define two separate artifact outputs. The pipeline will use these.
   files:
     - node_api_package.zip
-    - imagedefinitions.json # This file will only be created if the python worker is built
+    - imagedefinitions.json
   discard-paths: yes
-  # The name of the artifact must match the output artifact name in the pipeline's build stage
   name: BuildOutput
