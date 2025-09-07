@@ -2,7 +2,7 @@
 
 <div align="center">
 
-*A state-of-the-art movie browsing platform with personalized ML-powered recommendations*
+*A State-of-the-Art movie browsing platform with personalized ML-powered recommendations*
 
 [![Made with Node.js](https://img.shields.io/badge/Made%20with-Node.js-339933?style=for-the-badge&logo=node.js)](https://nodejs.org)
 [![Powered by ML](https://img.shields.io/badge/Powered%20by-Machine%20Learning-FF6F00?style=for-the-badge&logo=tensorflow)](https://scikit-learn.org)
