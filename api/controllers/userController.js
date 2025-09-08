@@ -1,21 +1,41 @@
 // api/controllers/userController.js
 const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
 const { DynamoDBDocumentClient, GetCommand, UpdateCommand } = require("@aws-sdk/lib-dynamodb");
+const { SQSClient, SendMessageCommand } = require("@aws-sdk/client-sqs");
 const fetch = require('node-fetch'); // This stays for the TMDB calls
 require('dotenv').config();
 
-// --- DynamoDB Client Setup ---
+// --- Service Clients Setup ---
 const client = new DynamoDBClient({ region: process.env.AWS_REGION });
 const docClient = DynamoDBDocumentClient.from(client);
+const sqsClient = new SQSClient({ region: process.env.AWS_REGION }); // SQS Client
 const TableName = 'BingflixUsers';
+const QueueUrl = process.env.SQS_QUEUE_URL; // We will add this to SSM
 
-// --- NOTE: We will replace this with SQS in the next phase. ---
-// For now, we'll keep the direct invoke logic but it won't work until the Python Lambda is deployed.
-// This is just a placeholder.
-const triggerRecommendationUpdate = (userEmail) => {
-  console.log(`Placeholder: Triggering recommendation update for user: ${userEmail}`);
-  // In the next phase, this will become an SQS message send.
+// --- SQS Message Sender Function ---
+const triggerRecommendationUpdate = async (userEmail) => {
+  if (!QueueUrl) {
+    console.error("SQS_QUEUE_URL environment variable not set. Cannot queue recommendation task.");
+    return;
+  }
+  
+  console.log(`Queueing recommendation task for user: ${userEmail}`);
+  
+  const command = new SendMessageCommand({
+    QueueUrl: QueueUrl,
+    // The body MUST be a string.
+    MessageBody: JSON.stringify({ email: userEmail }), 
+  });
+
+  try {
+    await sqsClient.send(command);
+    console.log("Successfully queued recommendation task.");
+  } catch (error) {
+    console.error("Error sending message to SQS:", error);
+  }
 };
+
+// --- Controllers ---
 
 // @desc    Add a movie to the user's liked list
 exports.addLike = async (req, res) => {
@@ -44,8 +64,8 @@ exports.addLike = async (req, res) => {
 
     const { Attributes } = await docClient.send(updateCommand);
 
-    // Trigger the (placeholder) update
-    triggerRecommendationUpdate(userEmail);
+    // --- Trigger the recommendation update via SQS ---
+    await triggerRecommendationUpdate(userEmail);
 
     res.status(200).json({
       success: true,
