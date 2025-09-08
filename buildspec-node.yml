@@ -1,13 +1,20 @@
 version: 0.2
+
 phases:
   install:
     runtime-versions:
       nodejs: 18
-  build:
     commands:
+      # We only need to install dependencies.
+      # The build happens inside the 'api' folder.
       - cd api
       - npm install --production
-      - zip -r ../node_api_package.zip .
+
 artifacts:
+  # This tells CodePipeline what to package for deployment.
+  # It's the most important part.
+  base-directory: 'api'
   files:
-    - node_api_package.zip
+    # This glob pattern means "include all files and all folders recursively"
+    # from within the 'base-directory'.
+    - '**/*'
