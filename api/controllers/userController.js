@@ -2,15 +2,15 @@
 const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
 const { DynamoDBDocumentClient, GetCommand, UpdateCommand } = require("@aws-sdk/lib-dynamodb");
 const { SQSClient, SendMessageCommand } = require("@aws-sdk/client-sqs");
-const fetch = require('node-fetch'); // This stays for the TMDB calls
+const fetch = require('node-fetch');
 require('dotenv').config();
 
 // --- Service Clients Setup ---
 const client = new DynamoDBClient({ region: process.env.AWS_REGION });
 const docClient = DynamoDBDocumentClient.from(client);
-const sqsClient = new SQSClient({ region: process.env.AWS_REGION }); // SQS Client
+const sqsClient = new SQSClient({ region: process.env.AWS_REGION });
 const TableName = 'BingflixUsers';
-const QueueUrl = process.env.SQS_QUEUE_URL; // We will add this to SSM
+const QueueUrl = process.env.SQS_QUEUE_URL;
 
 // --- SQS Message Sender Function ---
 const triggerRecommendationUpdate = async (userEmail) => {
@@ -23,7 +23,6 @@ const triggerRecommendationUpdate = async (userEmail) => {
   
   const command = new SendMessageCommand({
     QueueUrl: QueueUrl,
-    // The body MUST be a string.
     MessageBody: JSON.stringify({ email: userEmail }), 
   });
 
@@ -40,37 +39,50 @@ const triggerRecommendationUpdate = async (userEmail) => {
 // @desc    Add a movie to the user's liked list
 exports.addLike = async (req, res) => {
   const { movieId } = req.body;
-  const userEmail = req.user.email; // From our 'protect' middleware
+  const userEmail = req.user.email;
 
   if (movieId === undefined || typeof movieId !== 'number') {
-    return res.status(400).json({ success: false, message: 'Please provide a valid movie ID (number).' });
+    return res.status(400).json({ success: false, message: 'Please provide a valid movie ID.' });
   }
 
   try {
-    // DynamoDB's way to add an item to a list (if it doesn't exist)
-    // This is equivalent to Mongoose's $addToSet
-    const updateExpression = "ADD likedMovies :movie";
-    const expressionAttributeValues = {
-      ":movie": new Set([movieId]), // We use a Set to ensure uniqueness
-    };
+    // Step 1: Get the current user data to safely update the list
+    const getCommand = new GetCommand({
+      TableName,
+      Key: { email: userEmail },
+    });
+    const { Item } = await docClient.send(getCommand);
 
+    if (!Item) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    // Step 2: Update the likedMovies list in the code, ensuring no duplicates
+    // Initialize with an empty array if the attribute doesn't exist yet
+    const likedMovies = Item.likedMovies ? Array.from(Item.likedMovies) : [];
+    if (!likedMovies.includes(movieId)) {
+      likedMovies.push(movieId);
+    }
+
+    // Step 3: Write the updated list back to DynamoDB
     const updateCommand = new UpdateCommand({
       TableName,
       Key: { email: userEmail },
-      UpdateExpression: updateExpression,
-      ExpressionAttributeValues: expressionAttributeValues,
-      ReturnValues: "UPDATED_NEW", // Get the updated attributes back
+      UpdateExpression: "SET likedMovies = :movies",
+      ExpressionAttributeValues: {
+        ":movies": likedMovies,
+      },
+      ReturnValues: "UPDATED_NEW",
     });
-
     const { Attributes } = await docClient.send(updateCommand);
 
-    // --- Trigger the recommendation update via SQS ---
+    // Trigger the recommendation update via SQS
     await triggerRecommendationUpdate(userEmail);
 
     res.status(200).json({
       success: true,
-      message: 'Movie liked successfully. Recommendation update initiated.',
-      likedMovies: Array.from(Attributes.likedMovies), // Convert Set back to Array
+      message: 'Movie liked successfully. Recommendation update has been queued.',
+      likedMovies: Attributes.likedMovies,
     });
 
   } catch (error) {
@@ -89,22 +101,39 @@ exports.addSeriesLike = async (req, res) => {
   }
 
   try {
+    // Step 1: Get the current user data
+    const getCommand = new GetCommand({
+      TableName,
+      Key: { email: userEmail },
+    });
+    const { Item } = await docClient.send(getCommand);
+
+    if (!Item) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    // Step 2: Update the likedSeries list in the code, ensuring no duplicates
+    const likedSeries = Item.likedSeries ? Array.from(Item.likedSeries) : [];
+    if (!likedSeries.includes(seriesId)) {
+      likedSeries.push(seriesId);
+    }
+
+    // Step 3: Write the updated list back to DynamoDB
     const updateCommand = new UpdateCommand({
       TableName,
       Key: { email: userEmail },
-      UpdateExpression: "ADD likedSeries :series",
+      UpdateExpression: "SET likedSeries = :series",
       ExpressionAttributeValues: {
-        ":series": new Set([seriesId]),
+        ":series": likedSeries,
       },
       ReturnValues: "UPDATED_NEW",
     });
-
     const { Attributes } = await docClient.send(updateCommand);
 
     res.status(200).json({
       success: true,
       message: 'Series added to likes',
-      likedSeries: Array.from(Attributes.likedSeries),
+      likedSeries: Attributes.likedSeries,
     });
 
   } catch (error) {
@@ -120,7 +149,6 @@ exports.getLikes = async (req, res) => {
     const getCommand = new GetCommand({
       TableName,
       Key: { email: userEmail },
-      // Request only the specific attributes we need to save on read costs
       ProjectionExpression: "likedMovies, likedSeries",
     });
     const { Item } = await docClient.send(getCommand);
@@ -142,8 +170,6 @@ exports.getLikes = async (req, res) => {
 
 
 // @desc    Get the list of recommended movie details
-// NOTE: This function's logic for fetching from TMDB remains the same.
-// Only the initial step of getting the user's recommendation IDs changes.
 exports.getRecommendations = async (req, res) => {
   const userEmail = req.user.email;
   try {
@@ -166,7 +192,7 @@ exports.getRecommendations = async (req, res) => {
         return res.status(200).json({ recommendations: [] });
     }
 
-    // 3. Fetch details for each movie ID from TMDB (THIS LOGIC IS UNCHANGED)
+    // 3. Fetch details for each movie ID from TMDB
     const apiKey = process.env.TMDB_API_KEY;
     if (!apiKey) {
         return res.status(500).json({ message: 'Server configuration error: TMDB API key missing.' });
