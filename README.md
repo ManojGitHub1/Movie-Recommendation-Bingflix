@@ -30,7 +30,7 @@ While the core idea and design belong to my friend, I had the privilege of colla
 - 🔐 **Authentication System** – Implemented a secure user sign-up and login flow.  
 - ☁️ **Cloud Integration** – Utilized (AWS now ) -------------------------------GCP for Cloud Run (Serverless) and Cloud Registry (Docker Container).  
 - 🧠 **Machine Learning Recommender System** – Built and integrated a personalized movie recommendation engine.  
-- 💾 **Database Management** – Used MongoDB Atlas to structure and manage user data & movie preferences in the cloud.  
+- 💾 **Database Management** – Used dynamo db to structure and manage user data & movie preferences in the cloud.  
 - 🛰️ **Node Application** – Developed backend logic for fetching/storing data in DB, deployed on Vercel (Serverless).  
 
 A heartfelt thank you to my friend for letting me be part of this journey. It was an absolute pleasure contributing to such a cool and cinematic project!
