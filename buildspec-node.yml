@@ -1,0 +1,13 @@
+version: 0.2
+phases:
+  install:
+    runtime-versions:
+      nodejs: 18
+  build:
+    commands:
+      - cd api
+      - npm install --production
+      - zip -r ../node_api_package.zip .
+artifacts:
+  files:
+    - node_api_package.zip
