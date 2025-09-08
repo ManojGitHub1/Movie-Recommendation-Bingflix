@@ -19,7 +19,7 @@
 >
 > ✨ **Check out the original project here**: ([BingeFlix](https://github.com/dev1abhi/Bingflix-Website))  
 >
-> **P.S.** If you love this project, don’t forget to ⭐ the repository—it motivates my friend to keep building and innovating! 🙌
+> **P.S.** If you love this project, don’t forget to ⭐ the repository it motivates my friend to keep building and innovating! 🙌
 
 ---
 
